@@ -1,0 +1,807 @@
+openapi: 3.0.3
+info:
+  title: E-commerce Recommendation System API
+  description: |
+    This API provides AI-powered recommendation and search capabilities for e-commerce platforms.
+    
+    Features include:
+    * Content-based product recommendations
+    * Personalized user recommendations
+    * NLP-based semantic product search
+    * Image-based product search
+    * Multimodal search (text + image)
+    * A/B testing framework
+    * User activity tracking
+  version: 1.0.0
+  contact:
+    name: Aayush Sharma
+    email: aayush.75way@gmail.com
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+  - url: https://api.yourdomain.com/api
+    description: Production server
+
+tags:
+  - name: info
+    description: API information
+  - name: recommendations
+    description: Product recommendation endpoints
+  - name: search
+    description: Product search endpoints
+  - name: trending
+    description: Trending products
+  - name: activity
+    description: User activity tracking
+  - name: ab-testing
+    description: A/B testing framework
+  - name: products
+    description: Product catalog endpoints
+
+paths:
+  /info:
+    get:
+      tags:
+        - info
+      summary: Get API information
+      description: Returns information about the API and available components
+      operationId: getApiInfo
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiInfo'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /recommendations/content:
+    get:
+      tags:
+        - recommendations
+      summary: Get content-based recommendations
+      description: Get recommendations for similar products based on a given product
+      operationId: getContentRecommendations
+      parameters:
+        - name: item_name
+          in: query
+          description: Name of the product to get recommendations for
+          required: true
+          schema:
+            type: string
+        - name: top_n
+          in: query
+          description: Number of recommendations to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 5
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentRecommendationResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /recommendations/user:
+    get:
+      tags:
+        - recommendations
+      summary: Get personalized recommendations
+      description: Get personalized recommendations for a user, optionally based on a specific product
+      operationId: getUserRecommendations
+      parameters:
+        - name: user_id
+          in: query
+          description: User ID to get recommendations for
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: item_name
+          in: query
+          description: Name of the product to use for content-based filtering (optional)
+          required: false
+          schema:
+            type: string
+        - name: top_n
+          in: query
+          description: Number of recommendations to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 5
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRecommendationResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /search/nlp:
+    get:
+      tags:
+        - search
+      summary: Natural language search
+      description: Search products using natural language processing
+      operationId: nlpSearch
+      parameters:
+        - name: query
+          in: query
+          description: Natural language search query
+          required: true
+          schema:
+            type: string
+        - name: top_n
+          in: query
+          description: Number of results to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: user_id
+          in: query
+          description: User ID for personalized results (optional)
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NLPSearchResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /search/image:
+    post:
+      tags:
+        - search
+      summary: Image-based search
+      description: Search products using image similarity
+      operationId: imageSearch
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file for similarity search
+                top_n:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 10
+                  description: Number of results to return
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageSearchResponse'
+        '400':
+          description: Invalid parameters or image
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /search/multimodal:
+    post:
+      tags:
+        - search
+      summary: Multimodal search
+      description: Search products using both image and text
+      operationId: multimodalSearch
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+                - text_query
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file for similarity search
+                text_query:
+                  type: string
+                  description: Text search query
+                top_n:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 10
+                  description: Number of results to return
+                image_weight:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  default: 50
+                  description: Weight for image results (0-100)
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultimodalSearchResponse'
+        '400':
+          description: Invalid parameters or image
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /trending:
+    get:
+      tags:
+        - trending
+      summary: Get trending products
+      description: Get a list of trending products
+      operationId: getTrendingProducts
+      parameters:
+        - name: top_n
+          in: query
+          description: Number of products to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendingProductsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /activity:
+    post:
+      tags:
+        - activity
+      summary: Record user activity
+      description: Record user activity for improved recommendations
+      operationId: recordUserActivity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserActivity'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /ab_testing/assign:
+    get:
+      tags:
+        - ab-testing
+      summary: Assign user to A/B test
+      description: Assign a user to A/B test variants and get recommendation weights
+      operationId: assignABTest
+      parameters:
+        - name: user_id
+          in: query
+          description: User ID to assign
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: test_id
+          in: query
+          description: Specific test ID to assign to (optional)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ABTestingAssignResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+  /products:
+    get:
+      tags:
+        - products
+      summary: Get products
+      description: Get products with filtering options
+      operationId: getProducts
+      parameters:
+        - name: category
+          in: query
+          description: Filter by category
+          required: false
+          schema:
+            type: string
+        - name: brand
+          in: query
+          description: Filter by brand
+          required: false
+          schema:
+            type: string
+        - name: query
+          in: query
+          description: Search query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Number of products to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Pagination offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'Enter your API key with the format: "Bearer YOUR_API_KEY"'
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        Name:
+          type: string
+          example: "Smartphone X"
+        Brand:
+          type: string
+          example: "TechBrand"
+        Rating:
+          type: number
+          format: float
+          example: 4.5
+        ReviewCount:
+          type: integer
+          example: 120
+        ImageURL:
+          type: string
+          format: uri
+          example: "https://example.com/images/product1.jpg"
+        Category:
+          type: string
+          example: "Electronics > Smartphones"
+        similarity:
+          type: number
+          format: float
+          example: 0.87
+          description: Similarity score (0-1)
+
+    ProductWithRecommendationType:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            DominantRecommendationType:
+              type: string
+              example: "Content-Based"
+              enum: ["Content-Based", "Collaborative", "Neural"]
+              description: The type of recommendation algorithm that influenced this recommendation the most
+
+    SearchProduct:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            image_similarity:
+              type: number
+              format: float
+              example: 0.91
+              description: Image similarity score (0-1)
+            text_similarity:
+              type: number
+              format: float
+              example: 0.83
+              description: Text similarity score (0-1)
+
+    ApiInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        service:
+          type: string
+          example: "E-commerce Recommendation API"
+        model_info:
+          type: object
+          properties:
+            product_count:
+              type: integer
+              example: 4090
+            components_available:
+              type: object
+              properties:
+                recommendation_system:
+                  type: boolean
+                  example: true
+                nlp_search:
+                  type: boolean
+                  example: true
+                image_search:
+                  type: boolean
+                  example: true
+                multimodal_search:
+                  type: boolean
+                  example: true
+                ab_testing:
+                  type: boolean
+                  example: true
+            version:
+              type: string
+              example: "1.0.0"
+
+    ContentRecommendationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        item:
+          type: string
+          example: "Smartphone X"
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    UserRecommendationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: integer
+          example: 123
+        item:
+          type: string
+          example: "Smartphone X"
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductWithRecommendationType'
+
+    QueryAttributes:
+      type: object
+      properties:
+        price_range:
+          type: array
+          items:
+            type: number
+          example: [0, 300]
+          description: Min and max price range
+          nullable: true
+        brand:
+          type: string
+          example: "Samsung"
+          nullable: true
+        category:
+          type: string
+          example: "smartphones"
+          nullable: true
+        color:
+          type: string
+          example: "blue"
+          nullable: true
+        season:
+          type: string
+          example: "summer"
+          nullable: true
+        gender:
+          type: string
+          example: "women"
+          nullable: true
+        size:
+          type: string
+          example: "medium"
+          nullable: true
+
+    NLPSearchResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        query:
+          type: string
+          example: "affordable smartphones with good camera under $300"
+        detected_attributes:
+          $ref: '#/components/schemas/QueryAttributes'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    ImageSearchResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        image:
+          type: string
+          example: "uploaded_image.jpg"
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    MultimodalSearchResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        image:
+          type: string
+          example: "uploaded_image.jpg"
+        text_query:
+          type: string
+          example: "blue dress with floral pattern"
+        detected_attributes:
+          $ref: '#/components/schemas/QueryAttributes'
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchProduct'
+
+    TrendingProductsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        trending_products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    UserActivity:
+      type: object
+      required:
+        - user_id
+        - product_name
+        - activity_type
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          example: 123
+        product_name:
+          type: string
+          example: "Smartphone X"
+        activity_type:
+          type: string
+          example: "view"
+          enum: ["view", "search", "click", "purchase", "add_to_cart", "remove_from_cart"]
+
+    ActivityResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        message:
+          type: string
+          example: "Activity recorded successfully"
+
+    ABTestingAssignResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: integer
+          format: int64
+          example: 123
+        variant_assignments:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            test_123: "variant_1"
+        weights:
+          type: object
+          properties:
+            content_based:
+              type: number
+              format: float
+              example: 0.5
+            collaborative:
+              type: number
+              format: float
+              example: 0.2
+            neural:
+              type: number
+              format: float
+              example: 0.3
+
+    ProductsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        total_count:
+          type: integer
+          example: 150
+        offset:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          example: 20
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Error message description"
+        traceback:
+          type: string
+          example: "Detailed error traceback (only in development mode)"

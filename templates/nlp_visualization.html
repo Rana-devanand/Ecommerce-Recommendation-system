@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">How Our Natural Language Search Works</h1>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-cogs"></i> Technology Behind the Search</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Our natural language search uses advanced AI techniques to understand what you're looking for, even when you describe it in everyday language.</p>
+                    
+                    <div class="row mt-5">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Traditional Search vs. NLP Search</h4>
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Traditional Search</th>
+                                        <th>Natural Language Search</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Keyword-based</td>
+                                        <td>Understanding of concepts</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Exact matching</td>
+                                        <td>Semantic understanding</td>
+                                    </tr>
+                                    <tr>
+                                        <td>"running shoes"</td>
+                                        <td>"comfortable shoes for jogging in cold weather"</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Focuses on single words</td>
+                                        <td>Understands context and relationships</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Technology Stack</h4>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <i class="fas fa-brain text-primary mr-2"></i>
+                                    <strong>Transformer-based Models:</strong> Using BERT/MiniLM architecture
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-project-diagram text-success mr-2"></i>
+                                    <strong>Sentence Embeddings:</strong> Converting language to numeric vectors
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-sitemap text-danger mr-2"></i>
+                                    <strong>Semantic Similarity:</strong> Finding products that match your intent
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-filter text-warning mr-2"></i>
+                                    <strong>Attribute Extraction:</strong> Detecting seasons, colors, etc.
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-chart-line text-info mr-2"></i>
+                                    <strong>Relevance Ranking:</strong> Showing the most relevant results first
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-magic"></i> How It Works</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-5">
+                        <h4>The NLP Search Pipeline</h4>
+                        
+                        <!-- Search Pipeline Diagram -->
+                        <div class="d-flex justify-content-center align-items-center flex-wrap my-4">
+                            <!-- Step 1: Query Analysis -->
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-keyboard fa-2x text-primary"></i>
+                                    </div>
+                                    <h5 class="card-title">Query Analysis</h5>
+                                    <p class="card-text small">Analyze your natural language query</p>
+                                </div>
+                                <div class="card-footer bg-primary text-white text-center">
+                                    Step 1
+                                </div>
+                            </div>
+                            
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+                            
+                            <!-- Step 2: Semantic Encoding -->
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-brain fa-2x text-success"></i>
+                                    </div>
+                                    <h5 class="card-title">Semantic Encoding</h5>
+                                    <p class="card-text small">Convert to vector embeddings</p>
+                                </div>
+                                <div class="card-footer bg-success text-white text-center">
+                                    Step 2
+                                </div>
+                            </div>
+                            
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+                            
+                            <!-- Step 3: Similarity Search -->
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-search fa-2x text-danger"></i>
+                                    </div>
+                                    <h5 class="card-title">Similarity Search</h5>
+                                    <p class="card-text small">Find matching products</p>
+                                </div>
+                                <div class="card-footer bg-danger text-white text-center">
+                                    Step 3
+                                </div>
+                            </div>
+                            
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+                            
+                            <!-- Step 4: Attribute Filtering -->
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-filter fa-2x text-warning"></i>
+                                    </div>
+                                    <h5 class="card-title">Attribute Filtering</h5>
+                                    <p class="card-text small">Apply detected attributes</p>
+                                </div>
+                                <div class="card-footer bg-warning text-white text-center">
+                                    Step 4
+                                </div>
+                            </div>
+                            
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+                            
+                            <!-- Step 5: Result Ranking -->
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-sort-amount-down fa-2x text-info"></i>
+                                    </div>
+                                    <h5 class="card-title">Result Ranking</h5>
+                                    <p class="card-text small">Show most relevant results</p>
+                                </div>
+                                <div class="card-footer bg-info text-white text-center">
+                                    Step 5
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5">
+                            <h4>Example: "Show me comfortable running shoes for winter"</h4>
+                            
+                            <div class="table-responsive mt-3">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Process Step</th>
+                                            <th>What Happens</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Query Analysis</td>
+                                            <td>
+                                                <ul class="mb-0 text-left">
+                                                    <li>Identify product type: <strong>shoes</strong></li>
+                                                    <li>Identify attributes: <strong>comfortable, running</strong></li>
+                                                    <li>Identify season: <strong>winter</strong></li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Semantic Encoding</td>
+                                            <td>
+                                                <p class="mb-0 text-left">Convert query to numeric vector representation that captures meaning</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Similarity Search</td>
+                                            <td>
+                                                <p class="mb-0 text-left">Find products whose descriptions are most similar in meaning</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Attribute Filtering</td>
+                                            <td>
+                                                <p class="mb-0 text-left">Further filter results to ensure winter-appropriate products</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Result Ranking</td>
+                                            <td>
+                                                <p class="mb-0 text-left">Sort by relevance score, emphasizing products that match all criteria</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mb-5">
+        <a href="{{ url_for('nlp_search_route') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search"></i> Try Natural Language Search Now
+        </a>
+    </div>
+</div>
+{% endblock %}

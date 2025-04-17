@@ -1,0 +1,238 @@
+<!-- Create Test Modal -->
+<div class="modal fade" id="createTestModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New A/B Test</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createTestForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="testName">Test Name</label>
+                        <input type="text" class="form-control" id="testName" name="name" required 
+                               placeholder="e.g., Recommendation Weights Optimization">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="testDescription">Description</label>
+                        <textarea class="form-control" id="testDescription" name="description" rows="2" required
+                                  placeholder="Briefly describe the purpose of this test"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="endDate">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="variantCount">Number of Variants</label>
+                        <select class="form-control" id="variantCount" name="variant_count" onchange="updateVariants()">
+                            <option value="2">2 (Control + 1 Variant)</option>
+                            <option value="3">3 (Control + 2 Variants)</option>
+                            <option value="4">4 (Control + 3 Variants)</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            The first variant is always the control (current weights)
+                        </small>
+                    </div>
+                    
+                    <hr>
+                    <h5>Variant Configurations</h5>
+                    
+                    <!-- Control variant (read-only) -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <strong>Control Variant</strong> (Current Configuration)
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Content-Based Weight</label>
+                                        <input type="text" class="form-control" value="0.3" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Collaborative Weight</label>
+                                        <input type="text" class="form-control" value="0.2" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Neural Weight</label>
+                                        <input type="text" class="form-control" value="0.5" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic variants -->
+                    <div id="variantsContainer">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set default dates for new test form
+document.addEventListener('DOMContentLoaded', function() {
+    // Start date = today
+    const today = new Date();
+    const startDateInput = document.getElementById('startDate');
+    startDateInput.value = today.toISOString().split('T')[0];
+    
+    // End date = 30 days from now
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + 30);
+    const endDateInput = document.getElementById('endDate');
+    endDateInput.value = endDate.toISOString().split('T')[0];
+    
+    // Initialize variants
+    updateVariants();
+});
+
+// Handle dynamic variant creation
+function updateVariants() {
+    const variantCount = parseInt(document.getElementById('variantCount').value);
+    const container = document.getElementById('variantsContainer');
+    
+    // Clear existing variants
+    container.innerHTML = '';
+    
+    // Create new variant cards
+    for (let i = 1; i < variantCount; i++) {
+        const variantHtml = `
+            <div class="card mb-3 variant-config" id="variant${i}">
+                <div class="card-header bg-light">
+                    <strong>Variant ${i}</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="content_weight_${i}">Content-Based Weight</label>
+                                <input type="number" class="form-control weight-input" 
+                                       id="content_weight_${i}" name="content_weight_${i}" 
+                                       min="0" max="1" step="0.05" value="${0.3 + (i * 0.1)}"
+                                       onchange="normalizeWeights(${i})">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="collab_weight_${i}">Collaborative Weight</label>
+                                <input type="number" class="form-control weight-input" 
+                                       id="collab_weight_${i}" name="collab_weight_${i}" 
+                                       min="0" max="1" step="0.05" value="${0.2 + (i * 0.05)}"
+                                       onchange="normalizeWeights(${i})">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="neural_weight_${i}">Neural Weight</label>
+                                <input type="number" class="form-control weight-input" 
+                                       id="neural_weight_${i}" name="neural_weight_${i}" 
+                                       min="0" max="1" step="0.05" value="${0.5 - (i * 0.15)}"
+                                       onchange="normalizeWeights(${i})">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar bg-info" id="content_bar_${i}" role="progressbar" 
+                             style="width: ${(0.3 + (i * 0.1)) * 100}%;">${Math.round((0.3 + (i * 0.1)) * 100)}%</div>
+                        <div class="progress-bar bg-success" id="collab_bar_${i}" role="progressbar" 
+                             style="width: ${(0.2 + (i * 0.05)) * 100}%;">${Math.round((0.2 + (i * 0.05)) * 100)}%</div>
+                        <div class="progress-bar bg-danger" id="neural_bar_${i}" role="progressbar" 
+                             style="width: ${(0.5 - (i * 0.15)) * 100}%;">${Math.round((0.5 - (i * 0.15)) * 100)}%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML += variantHtml;
+    }
+    
+    // Update weights visualization for each variant
+    for (let i = 1; i < variantCount; i++) {
+        normalizeWeights(i);
+    }
+}
+
+// Normalize weights to sum to 1 and update visualization
+function normalizeWeights(variantIndex) {
+    const contentWeight = parseFloat(document.getElementById(`content_weight_${variantIndex}`).value) || 0;
+    const collabWeight = parseFloat(document.getElementById(`collab_weight_${variantIndex}`).value) || 0;
+    const neuralWeight = parseFloat(document.getElementById(`neural_weight_${variantIndex}`).value) || 0;
+    
+    // Calculate total
+    const total = contentWeight + collabWeight + neuralWeight;
+    
+    // Normalize weights
+    let normalizedContent, normalizedCollab, normalizedNeural;
+    
+    if (total > 0) {
+        normalizedContent = contentWeight / total;
+        normalizedCollab = collabWeight / total;
+        normalizedNeural = neuralWeight / total;
+    } else {
+        // Default to equal weights if all are zero
+        normalizedContent = normalizedCollab = normalizedNeural = 1/3;
+    }
+    
+    // Update progress bars
+    const contentBar = document.getElementById(`content_bar_${variantIndex}`);
+    const collabBar = document.getElementById(`collab_bar_${variantIndex}`);
+    const neuralBar = document.getElementById(`neural_bar_${variantIndex}`);
+    
+    contentBar.style.width = `${normalizedContent * 100}%`;
+    contentBar.innerText = `${Math.round(normalizedContent * 100)}%`;
+    
+    collabBar.style.width = `${normalizedCollab * 100}%`;
+    collabBar.innerText = `${Math.round(normalizedCollab * 100)}%`;
+    
+    neuralBar.style.width = `${normalizedNeural * 100}%`;
+    neuralBar.innerText = `${Math.round(normalizedNeural * 100)}%`;
+}
+
+// Handle test creation form submission
+document.getElementById('createTestForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch("/ab_testing/create", {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Test created successfully!');
+            window.location.reload();
+        } else {
+            alert('Error creating test: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the test.');
+    });
+});
+</script>

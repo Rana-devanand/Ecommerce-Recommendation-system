@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}Ecommerce Recommendation System{% endblock %}
+    </title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/voice-search.css') }}"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .navbar {
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .container {
+        margin-top: 30px;
+      }
+      {% block additional_styles %}{% endblock %}
+    </style>
+    {% block head_extras %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand mx-auto" href="{{ url_for('index') }}"
+        >Ecommerce Recommendation System</a
+      >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li
+            class="nav-item {% if request.endpoint == 'index' %}active{% endif %}"
+          >
+            <a class="nav-link" href="{{ url_for('index') }}"
+              ><i class="fas fa-home"></i> Home</a
+            >
+          </li>
+
+          <!-- Search dropdown menu -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="searchDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-search"></i> Search
+            </a>
+            <div class="dropdown-menu" aria-labelledby="searchDropdown">
+              <a class="dropdown-item" href="{{ url_for('main') }}">
+                <i class="fas fa-list"></i> Traditional Search
+              </a>
+              <a class="dropdown-item" href="{{ url_for('nlp_search_route') }}">
+                <i class="fas fa-comment"></i> Natural Language Search
+              </a>
+              <a class="dropdown-item" href="{{ url_for('image_search') }}">
+                <i class="fas fa-camera"></i> Image Search
+              </a>
+              <div class="dropdown-divider"></div>
+              <a
+                class="dropdown-item bg-primary text-white"
+                href="{{ url_for('multimodal_search_route') }}"
+              >
+                <i class="fas fa-search-plus"></i> <strong>NEW!</strong> AI
+                Multimodal Search
+              </a>
+              <div class="dropdown-divider"></div>
+              <a
+                class="dropdown-item"
+                href="{{ url_for('voice_search_visualization') }}"
+              >
+                <i class="fas fa-microphone"></i> Voice Search Technology
+              </a>
+            </div>
+          </li>
+
+          <!-- AI Assistant -->
+          <li
+            class="nav-item {% if request.endpoint == 'ai_assistant_page' %}active{% endif %}"
+          >
+            <a
+              class="nav-link btn btn-outline-danger mr-2"
+              href="{{ url_for('ai_assistant_page') }}"
+            >
+              <i class="fas fa-robot"></i> AI Assistant
+            </a>
+          </li>
+
+          {% if 'user_id' in session %}
+          <!-- Cart with item count -->
+          <li class="nav-item">
+            <a
+              class="nav-link btn btn-outline-success mr-2 position-relative"
+              href="{{ url_for('view_cart') }}"
+            >
+              <i class="fas fa-shopping-cart"></i> Cart {% if cart_item_count
+              and cart_item_count > 0 %}
+              <span
+                class="badge badge-pill badge-danger"
+                style="position: absolute; top: -5px; right: -5px"
+              >
+                {{ cart_item_count }}
+              </span>
+              {% endif %}
+            </a>
+          </li>
+
+          <!-- New Order History Link -->
+          <li class="nav-item">
+            <a
+              class="nav-link btn btn-outline-secondary mr-2"
+              href="{{ url_for('order_history') }}"
+            >
+              <i class="fas fa-clipboard-list"></i> My Orders
+            </a>
+          </li>
+
+          <!-- Settings dropdown -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="userDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-user"></i> My Account
+            </a>
+            <div
+              class="dropdown-menu dropdown-menu-right"
+              aria-labelledby="userDropdown"
+            >
+              <a class="dropdown-item" href="{{ url_for('profile') }}">
+                <i class="fas fa-user-circle"></i> My Profile
+              </a>
+              <a class="dropdown-item" href="{{ url_for('order_history') }}">
+                <i class="fas fa-clipboard-list"></i> Order History
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#" id="settingsLink">
+                <i class="fas fa-cog"></i> Settings
+              </a>
+              <a class="dropdown-item" href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a
+              class="nav-link btn btn-outline-primary mr-2"
+              href="#"
+              data-toggle="modal"
+              data-target="#signupModal"
+              >Sign Up</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link btn btn-primary"
+              href="#"
+              data-toggle="modal"
+              data-target="#signinModal"
+              >Sign In</a
+            >
+          </li>
+          {% endif %}
+
+          <!-- For admin users only, add A/B Testing -->
+          {% if 'user_id' in session and session['user_id'] == 1 %}
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="abTestingDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <i class="fas fa-flask"></i> A/B Testing
+            </a>
+            <div class="dropdown-menu" aria-labelledby="abTestingDropdown">
+              <a
+                class="dropdown-item"
+                href="{{ url_for('ab_testing_dashboard') }}"
+              >
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a>
+              <a
+                class="dropdown-item"
+                href="{{ url_for('ab_testing_explanation') }}"
+              >
+                <i class="fas fa-question-circle"></i> How It Works
+              </a>
+              <div class="dropdown-divider"></div>
+              <a
+                class="dropdown-item bg-primary text-white"
+                href="#"
+                data-toggle="modal"
+                data-target="#createTestModal"
+              >
+                <i class="fas fa-plus"></i> Create New Test
+              </a>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+    <!-- Flash messages -->
+    <div class="container mt-2">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white mt-5">
+      <div class="container" style="padding-top: 20px">
+        <div class="row">
+          <div class="col-md-12">
+            <hr class="bg-light" />
+            <p class="text-center">
+              © 2025 Ecommerce Recommendation System. All Rights Reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Modals for signup/signin -->
+    {% include 'modals.html' %}
+
+    <!-- Settings Modal -->
+    <div
+      class="modal fade"
+      id="settingsModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="settingsModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <h5>Choose Theme:</h5>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="theme"
+                id="defaultTheme"
+                value="default"
+                checked
+              />
+              <label class="form-check-label" for="defaultTheme">
+                Default
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="theme"
+                id="blackTheme"
+                value="black"
+              />
+              <label class="form-check-label" for="blackTheme">
+                Black Theme
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="theme"
+                id="greenTheme"
+                value="green"
+              />
+              <label class="form-check-label" for="greenTheme">
+                Green Theme
+              </label>
+            </div>
+            <hr />
+            <h5>Zoom:</h5>
+            <button type="button" class="btn btn-primary mr-2" id="zoomIn">
+              Zoom In
+            </button>
+            <button type="button" class="btn btn-primary" id="zoomOut">
+              Zoom Out
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="applyTheme">
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include A/B Testing Modal for admin users -->
+    {% if 'user_id' in session and session['user_id'] == 1 %} {% include
+    'create_test_modal.html' %} {% endif %}
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/voice-search.js') }}"></script>
+
+    <script>
+      // Settings functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        // Handle click on Settings link to open the modal
+        document
+          .getElementById("settingsLink")
+          .addEventListener("click", function () {
+            $("#settingsModal").modal("show");
+          });
+
+        // Handle theme apply button click
+        document
+          .getElementById("applyTheme")
+          .addEventListener("click", function () {
+            // Get the selected theme value
+            var selectedTheme = document.querySelector(
+              'input[name="theme"]:checked'
+            ).value;
+
+            // Apply the selected theme
+            if (selectedTheme === "black") {
+              document.body.style.backgroundColor = "black";
+              document.body.style.color = "white";
+            } else if (selectedTheme === "green") {
+              document.body.style.backgroundColor = "green";
+              document.body.style.color = "white";
+            } else {
+              // Default theme
+              document.body.style.backgroundColor = "#f8f9fa";
+              document.body.style.color = "black";
+            }
+
+            // Close the modal
+            $("#settingsModal").modal("hide");
+          });
+
+        // Handle zoom in button click
+        document
+          .getElementById("zoomIn")
+          .addEventListener("click", function () {
+            document.body.style.zoom = "115%";
+          });
+
+        // Handle zoom out button click
+        document
+          .getElementById("zoomOut")
+          .addEventListener("click", function () {
+            document.body.style.zoom = "100%";
+          });
+      });
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

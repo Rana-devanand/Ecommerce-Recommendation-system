@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block title %}Order Details - Ecommerce Recommendation System{% endblock %}
+
+{% block additional_styles %}
+.order-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.order-card {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.order-header {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+.order-details {
+    padding: 20px;
+}
+.order-items {
+    margin-top: 20px;
+}
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.item-row:last-child {
+    border-bottom: none;
+}
+.item-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.item-details {
+    flex-grow: 1;
+    padding-left: 15px;
+}
+.shipping-address, .payment-info {
+    margin-bottom: 20px;
+}
+.status-badge-pending {
+    background-color: #ffc107;
+}
+.status-badge-paid {
+    background-color: #17a2b8;
+}
+.status-badge-shipped {
+    background-color: #007bff;
+}
+.status-badge-delivered {
+    background-color: #28a745;
+}
+.tracking-info {
+    background-color: #e9f7ef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.tracking-timeline {
+    position: relative;
+    padding-left: 30px;
+    margin-top: 20px;
+}
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #28a745;
+    z-index: 1;
+}
+.timeline-item:after {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 20px;
+    width: 1px;
+    height: calc(100% - 20px);
+    background-color: #ccc;
+}
+.timeline-item:last-child:after {
+    display: none;
+}
+.timeline-item.inactive:before {
+    background-color: #ccc;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="order-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Order Details</h1>
+            <a href="{{ url_for('order_history') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+        </div>
+        
+        <div class="card order-card">
+            <div class="order-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Order #{{ order.id }}</h5>
+                        <p class="text-muted mb-0">Placed on {{ order.order_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    </div>
+                    <span class="badge status-badge-{{ order.status }} text-white">{{ order.status|capitalize }}</span>
+                </div>
+            </div>
+            
+            <div class="order-details">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="shipping-address">
+                            <h5>Shipping Address</h5>
+                            <address>
+                                <strong>{{ shipping_address.full_name }}</strong><br>
+                                {{ shipping_address.street_address }}<br>
+                                {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.postal_code }}<br>
+                                {{ shipping_address.country }}
+                            </address>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="payment-info">
+                            <h5>Payment Information</h5>
+                            {% if payment_method == 'credit_card' %}
+                                <p><i class="far fa-credit-card mr-2"></i> Credit Card</p>
+                                <p>{{ card_type }} ending in {{ card_last_four }}</p>
+                            {% else %}
+                                <p><i class="fab fa-paypal mr-2"></i> PayPal</p>
+                                <p>Transaction ID: {{ payment_id }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if order.status in ['shipped', 'delivered'] %}
+                    <div class="tracking-info">
+                        <h5><i class="fas fa-truck mr-2"></i> Tracking Information</h5>
+                        <p>Tracking Number: <strong>{{ tracking_number }}</strong></p>
+                        <p>Estimated Delivery: <strong>{{ estimated_delivery_date.strftime('%B %d, %Y') }}</strong></p>
+                        
+                        <div class="tracking-timeline">
+                            <div class="timeline-item">
+                                <h6>Order Placed</h6>
+                                <p class="text-muted">{{ order.order_date.strftime('%B %d, %Y') }}</p>
+                            </div>
+                            <div class="timeline-item">
+                                <h6>Order Processed</h6>
+                                <p class="text-muted">{{ processing_date.strftime('%B %d, %Y') }}</p>
+                            </div>
+                            <div class="timeline-item {% if order.status == 'shipped' %}inactive{% endif %}">
+                                <h6>Order Shipped</h6>
+                                <p class="text-muted">{{ shipping_date.strftime('%B %d, %Y') }}</p>
+                            </div>
+                            <div class="timeline-item inactive">
+                                <h6>Order Delivered</h6>
+                                <p class="text-muted">Expected by {{ estimated_delivery_date.strftime('%B %d, %Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="order-summary mb-4">
+                    <h5>Order Summary</h5>
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>${{ "%.2f"|format(subtotal) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Shipping:</span>
+                        <span>${{ "%.2f"|format(shipping_cost) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tax:</span>
+                        <span>${{ "%.2f"|format(tax) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <strong>Total:</strong>
+                        <strong>${{ "%.2f"|format(order.total_amount) }}</strong>
+                    </div>
+                </div>
+                
+                <div class="order-items">
+                    <h5>Order Items</h5>
+                    {% for item in order.items %}
+                        <div class="item-row">
+                            <img src="{{ item.image_url }}" alt="{{ item.product_name }}" class="item-image">
+                            <div class="item-details">
+                                <h6>{{ item.product_name }}</h6>
+                                <small class="text-muted">Qty: {{ item.quantity }} × ${{ "%.2f"|format(item.price) }}</small>
+                            </div>
+                            <div class="item-price">
+                                <strong>${{ "%.2f"|format(item.quantity * item.price) }}</strong>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-shopping-bag"></i> Continue Shopping
+            </a>
+            
+            {% if order.status == 'pending' or order.status == 'paid' %}
+                <button class="btn btn-outline-secondary ml-2" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print Order
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

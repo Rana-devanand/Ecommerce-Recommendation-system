@@ -1,0 +1,442 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3><i class="fas fa-search"></i> Natural Language Search</h3>
+        </div>
+        <div class="card-body">
+          <p class="lead">Ask naturally, find exactly what you need.</p>
+          <p>
+            Try queries like:
+            <em>"show me comfortable running shoes for winter"</em> or
+            <em>"find red dress for summer wedding under $100"</em>
+          </p>
+          <p class="text-right">
+            <a
+              href="{{ url_for('nlp_visualization') }}"
+              class="btn btn-outline-primary btn-sm"
+            >
+              <i class="fas fa-info-circle"></i> How does this work?
+            </a>
+          </p>
+
+          <form
+            action="{{ url_for('nlp_search_route') }}"
+            method="post"
+            class="mt-4"
+            id="nlpSearchForm"
+          >
+            <div
+              class="input-group input-group-lg mb-3"
+              id="nlpSearchInputContainer"
+            >
+              <input
+                type="text"
+                class="form-control"
+                id="nlpSearchInput"
+                name="query"
+                placeholder="Describe what you're looking for..."
+                value="{{ query if query else '' }}"
+                autofocus
+              />
+              <div class="input-group-append">
+                <button type="button" class="voice-search-button btn btn-outline-secondary" id="nlpVoiceSearchButton" title="Search with your voice">
+                  <i class="fas fa-microphone"></i>
+                </button>
+                <button class="btn btn-primary" type="submit">
+                  <i class="fas fa-search"></i> Search
+                </button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="top_n">Number of results:</label>
+                  <select class="form-control" id="top_n" name="top_n">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if message %}
+  <div class="alert alert-info">{{ message }}</div>
+  {% endif %} 
+  
+  {% if search_metadata is defined %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5>Understanding Your Search</h5>
+        </div>
+        <div class="card-body">
+          <p>
+            <strong>Your query:</strong> "{{ search_metadata.original_query }}"
+          </p>
+
+          {% if search_metadata.detected_attributes %}
+          <p><strong>We detected these details:</strong></p>
+          <ul>
+            {% for attr, value in search_metadata.detected_attributes.items() %}
+            <li>
+              <strong>{{ attr|replace('_', ' ')|title }}:</strong>
+              {% if attr == 'price_range' %} 
+                {% if value[0] == 0 %} 
+                  Under ${{ value[1] }} 
+                {% else %} 
+                  ${{ value[0] }} - ${{ value[1] }} 
+                {% endif %}
+              {% else %} 
+                {{ value }} 
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %} 
+  
+  {% if search_results is defined and not search_results.empty %}
+  <div class="row mb-3">
+    <div class="col-12">
+      <h2>Search Results</h2>
+      <p>Showing {{ search_results|length }} products sorted by relevance</p>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for index, product in search_results.iterrows() %}
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <div class="card h-100">
+        <!-- Relevance score badge -->
+        <div class="position-absolute" style="top: 10px; right: 10px">
+          <span class="badge badge-pill badge-primary">
+            {{ "%.0f"|format(product.similarity * 100) }}% match
+          </span>
+        </div>
+
+        <a href="{{ url_for('view_product', product_name=product['Name']) }}">
+          <img
+            src="{{ product['ImageURL'] }}"
+            class="card-img-top"
+            alt="{{ product['Name'] }}"
+            style="height: 200px; object-fit: cover"
+          />
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">{{ truncate(product['Name'],20) }}</h5>
+          <p class="card-text">Brand: {{ product['Brand'] }}</p>
+          <p class="card-text">
+            <small class="text-muted">Rating: {{ product['Rating'] }} ★</small>
+          </p>
+          <div class="d-flex justify-content-between">
+            <a
+              href="{{ url_for('view_product', product_name=product['Name']) }}"
+              class="btn btn-primary"
+              >View Details</a
+            >
+
+            <!-- Add feedback button for logged in users -->
+            {% if 'user_id' in session %}
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              data-toggle="modal"
+              data-target="#feedbackModal-{{ index }}"
+            >
+              <i class="fas fa-thumbs-up"></i>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    {% if 'user_id' in session %}
+    <div
+      class="modal fade"
+      id="feedbackModal-{{ index }}"
+      tabindex="-1"
+      role="dialog"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Rate this search result</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form action="{{ url_for('recommendation_feedback') }}" method="post">
+            <div class="modal-body">
+              <p>
+                How relevant is <strong>{{ product['Name'] }}</strong> to your
+                search?
+              </p>
+
+              <input
+                type="hidden"
+                name="product_name"
+                value="{{ product['Name'] }}"
+              />
+              <input
+                type="hidden"
+                name="recommendation_type"
+                value="NLP-Search"
+              />
+
+              <div class="form-group">
+                <label>Rating:</label>
+                <div class="rating">
+                  <div
+                    class="btn-group btn-group-toggle w-100"
+                    data-toggle="buttons"
+                  >
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="1" /> 1 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="2" /> 2 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="3" /> 3 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="4" /> 4 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="5" checked /> 5 ★
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="comments-{{ index }}">Comments (optional):</label>
+                <textarea
+                  class="form-control"
+                  id="comments-{{ index }}"
+                  name="comments"
+                  rows="2"
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Submit Feedback
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %} 
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Back to normal search link -->
+  <div class="mt-4 mb-5 text-center">
+    <a href="{{ url_for('main') }}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i> Back to Traditional Search
+    </a>
+    <a href="{{ url_for('voice_search_visualization') }}" class="btn btn-outline-info ml-2">
+      <i class="fas fa-microphone"></i> Learn About Voice Search
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include the autocomplete script -->
+<script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // First, check if elements exist
+    const nlpSearchInput = document.getElementById('nlpSearchInput');
+    const nlpVoiceSearchButton = document.getElementById('nlpVoiceSearchButton');
+    const nlpSearchForm = document.getElementById('nlpSearchForm');
+    
+    if (!nlpSearchInput || !nlpVoiceSearchButton) {
+      console.error("Required elements for NLP voice search not found!");
+      return;
+    }
+    
+    // Initialize autocomplete for NLP search with extended debounce time
+    try {
+      new SearchAutocomplete('#nlpSearchInput', {
+        delay: 500, // Longer delay for natural language search
+        minLength: 3, // Require more characters for NLP search
+        maxResults: 7, // Show fewer suggestions for NLP searches
+        onSelect: function(suggestion) {
+          // Optional: Auto-submit when suggestion selected
+          // document.getElementById('nlpSearchForm').submit();
+        }
+      });
+      console.log("NLP search autocomplete initialized");
+    } catch (error) {
+      console.error("Error initializing autocomplete:", error);
+    }
+    
+    // Add a status indicator for voice recognition
+    const statusIndicator = document.createElement('div');
+    statusIndicator.id = 'voice-status-indicator';
+    statusIndicator.style.display = 'none';
+    statusIndicator.style.color = '#dc3545';
+    statusIndicator.style.fontSize = '14px';
+    statusIndicator.style.marginTop = '5px';
+    statusIndicator.style.textAlign = 'center';
+    
+    // Add status indicator after input group
+    const inputContainer = document.getElementById('nlpSearchInputContainer');
+    if (inputContainer) {
+      inputContainer.parentNode.insertBefore(statusIndicator, inputContainer.nextSibling);
+    }
+    
+    // Initialize voice search for NLP search with improved feedback
+    try {
+      const voiceSearch = new VoiceSearch({
+        targetInputId: 'nlpSearchInput',
+        buttonId: 'nlpVoiceSearchButton',
+        formId: 'nlpSearchForm',
+        autoSubmit: true, // Automatically submit when voice input is complete
+        language: 'en-US',
+        maxDuration: 15000, // 15 seconds for longer natural language queries
+        interimResults: true,
+        debug: true, // Enable debug mode
+        onStart: function() {
+          console.log('NLP voice search started');
+          
+          // Show status indicator
+          statusIndicator.style.display = 'block';
+          statusIndicator.style.color = '#dc3545';
+          statusIndicator.innerHTML = '<i class="fas fa-microphone"></i> Listening...';
+          
+          // Add visual feedback to input
+          nlpSearchInput.classList.add('voice-active');
+          nlpSearchInput.placeholder = 'Listening...';
+        },
+        onResult: function(transcript, confidence, isFinal) {
+          console.log(`Voice recognition result: "${transcript}" (confidence: ${confidence}, isFinal: ${isFinal})`);
+          
+          // IMPORTANT: Always update the input value with the transcript
+          // This is the key fix for the issue where text isn't appearing
+          nlpSearchInput.value = transcript;
+          
+          // Update status indicator
+          if (isFinal) {
+            statusIndicator.style.color = '#28a745';
+            statusIndicator.innerHTML = `<i class="fas fa-check"></i> Recognized: "${transcript}"`;
+            console.log(`Final NLP voice search result: "${transcript}" (confidence: ${confidence})`);
+            
+            // Submit after a short delay to allow the user to see what was recognized
+            setTimeout(function() {
+              if (nlpSearchForm && transcript.trim() !== '') {
+                nlpSearchForm.submit();
+              }
+            }, 1000);
+          } else {
+            statusIndicator.innerHTML = `<i class="fas fa-microphone-alt"></i> Hearing: "${transcript}"`;
+          }
+        },
+        onEnd: function() {
+          console.log('NLP voice search ended');
+          
+          // Reset visual feedback
+          nlpSearchInput.classList.remove('voice-active');
+          nlpSearchInput.placeholder = 'Describe what you\'re looking for...';
+          
+          // Hide status indicator after a delay
+          setTimeout(function() {
+            statusIndicator.style.display = 'none';
+          }, 2000);
+        },
+        onError: function(event) {
+          console.error('NLP voice search error:', event.error);
+          
+          // Show error in status indicator
+          statusIndicator.style.color = '#dc3545';
+          statusIndicator.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${event.error || 'Unknown error'}`;
+          
+          // Reset input
+          nlpSearchInput.classList.remove('voice-active');
+          nlpSearchInput.placeholder = 'Describe what you\'re looking for...';
+          
+          // Hide status after a delay
+          setTimeout(function() {
+            statusIndicator.style.display = 'none';
+          }, 3000);
+        },
+        // Add custom commands specific to NLP search
+        customCommands: {
+          'show products like': function() {
+            // Custom handling for "show products like" queries
+            console.log("Recognized 'show products like' command");
+          },
+          'find items that': function() {
+            // Custom handling for "find items that" queries
+            console.log("Recognized 'find items that' command");
+          }
+        }
+      });
+      console.log("NLP voice search initialized");
+      
+      // Add CSS for voice active state
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        .voice-active {
+          border-color: #dc3545;
+          box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        
+        #voice-status-indicator {
+          animation: fade-in 0.3s;
+        }
+        
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `;
+      document.head.appendChild(styleElement);
+      
+    } catch (error) {
+      console.error("Error initializing voice search:", error);
+      // Show error to user
+      if (statusIndicator) {
+        statusIndicator.style.display = 'block';
+        statusIndicator.style.color = '#dc3545';
+        statusIndicator.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Voice search error: ${error.message}`;
+      }
+    }
+  });
+</script>
+{% endblock %}

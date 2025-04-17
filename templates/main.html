@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Main Page - Ecommerce Recommendation{% endblock %}
+
+{% block additional_styles %}
+body {
+  background-color: #f8f9fa;
+}
+.recommendation-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+}
+/* Rating system styles */
+.rating .btn-group {
+  display: flex;
+}
+.rating .btn-group .btn {
+  flex: 1;
+}
+.rating .btn-outline-warning.active {
+  background-color: #ffc107;
+  color: white;
+}
+{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="container" style="margin-top:30px;">
+  <form action="/recommendations" method="post" style="display:flex;" id="searchForm">
+      <div class="flex-grow-1 mr-2 position-relative" id="searchInputContainer">
+          <div class="input-group">
+              <input type="text" class="form-control" id="searchInput" name="prod" placeholder="Search for products...">
+              <div class="input-group-append">
+                  <button type="button" class="voice-search-button" id="voiceSearchButton" title="Search with your voice">
+                      <i class="fas fa-microphone"></i>
+                  </button>
+              </div>
+          </div>
+      </div>
+      <input type="number" class="form-control" name="nbr" placeholder="Number of products..." style="width:100px;">
+      <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+</div>
+
+<!-- NEW ADDITION: NLP Search Banner -->
+<div class="container text-center mt-2 mb-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-lightbulb"></i> <strong>Try our new Natural Language Search!</strong> 
+                Ask naturally like "show me comfortable running shoes for winter" or "find red dress for summer wedding"
+                <a href="{{ url_for('nlp_search_route') }}" class="btn btn-primary btn-sm ml-2">
+                    <i class="fas fa-comment"></i> Try Natural Language Search
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END OF NEW ADDITION -->
+
+{% if message %}
+<h5 style="margin-left:42%;margin-top:10px; text:bold;">{{message}}</h5>
+{% endif %}
+
+<!--trending recommendations-->
+<!--'Name', 'ReviewCount', 'Brand', 'ImageURL', 'Rating'-->
+<!-- Products -->
+{% if not content_based_rec.empty %}
+<div class="container mt-5">
+  {% if personalized %}
+    <h2 class="text-center mb-2">Personalized Recommendations</h2>
+    <p class="text-center text-muted mb-4">
+      Based on your search and viewing history using our enhanced recommendation system
+    </p>
+  {% else %}
+    <h2 class="text-center mb-2">Recommended Products</h2>
+    <p class="text-center text-muted mb-4">
+      Content-based recommendations for your search
+    </p>
+  {% endif %}
+  
+  <div class="row mt-4">
+    {% for index, product in content_based_rec.iterrows() %}
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <div class="card h-100">
+        <!-- Badge colors by recommendation type -->
+        {% if 'DominantRecommendationType' in product %}
+          {% if product.DominantRecommendationType == 'Content-Based' %}
+            <span class="badge badge-info recommendation-badge">Content-Based</span>
+          {% elif product.DominantRecommendationType == 'Collaborative' %}
+            <span class="badge badge-success recommendation-badge">Collaborative</span>
+          {% elif product.DominantRecommendationType == 'Neural' %}
+            <span class="badge badge-danger recommendation-badge">Neural CF</span>
+          {% else %}
+            <span class="badge badge-primary recommendation-badge">Hybrid</span>
+          {% endif %}
+        {% elif personalized %}
+          <span class="badge badge-primary recommendation-badge">Hybrid</span>
+        {% else %}
+          <span class="badge badge-info recommendation-badge">Content-based</span>
+        {% endif %}
+        
+        <a href="{{ url_for('view_product', product_name=product['Name']) }}">
+          <img src="{{ product['ImageURL'] }}" class="card-img-top" alt="{{ product['Name'] }}" style="height: 200px; object-fit: cover;">
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">{{ truncate(product['Name'],12) }}</h5>
+          <p class="card-text">Brand: {{ product['Brand'] }}</p>
+          <p class="card-text">
+            <small class="text-muted">Rating: {{ product['Rating'] }} ★</small>
+          </p>
+          <div class="d-flex justify-content-between">
+            <a href="{{ url_for('view_product', product_name=product['Name']) }}" class="btn btn-primary">View Details</a>
+            
+            <!-- Add feedback button for logged in users -->
+            {% if 'user_id' in session %}
+              <button class="btn btn-outline-secondary btn-sm" data-toggle="modal" 
+                    data-target="#feedbackModal-{{ index }}">
+                <i class="fas fa-thumbs-up"></i>
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Feedback Modal -->
+    {% if 'user_id' in session %}
+    <div class="modal fade" id="feedbackModal-{{ index }}" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Rate this recommendation</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form action="{{ url_for('recommendation_feedback') }}" method="post">
+            <div class="modal-body">
+              <p>How relevant is <strong>{{ product['Name'] }}</strong> to your interests?</p>
+              
+              <input type="hidden" name="product_name" value="{{ product['Name'] }}">
+              {% if 'DominantRecommendationType' in product %}
+                <input type="hidden" name="recommendation_type" value="{{ product.DominantRecommendationType }}">
+              {% else %}
+                <input type="hidden" name="recommendation_type" value="Content-Based">
+              {% endif %}
+              
+              <div class="form-group">
+                <label>Rating:</label>
+                <div class="rating">
+                  <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="1"> 1 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="2"> 2 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="3"> 3 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="4"> 4 ★
+                    </label>
+                    <label class="btn btn-outline-warning">
+                      <input type="radio" name="rating" value="5" checked> 5 ★
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="comments-{{ index }}">Comments (optional):</label>
+                <textarea class="form-control" id="comments-{{ index }}" name="comments" rows="2"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal{{ index }}" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">{{ product['Name'] }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4">
+                  <img src="{{ product['ImageURL'] }}" class="img-fluid" alt="{{ product['Name'] }}" style="height: 200px;">
+              </div>
+              <div class="col-md-8">
+                <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
+                <!-- Add other product details here -->
+                <!-- Example: -->
+                <p><strong>Review Count:</strong> {{ product['ReviewCount'] }}</p>
+                <p><strong>Rating:</strong> {{ product['Rating'] }}</p>
+                <p><strong>Price:</strong> {{ random_price }}</p>
+                <!-- Add more details as needed -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Add link to view recommendation methodology -->
+<div class="text-center mt-3 mb-5">
+  <a href="{{ url_for('recommendation_visualization') }}" class="btn btn-outline-info">
+    <i class="fas fa-info-circle"></i> How Our Recommendation System Works
+  </a>
+  <a href="{{ url_for('voice_search_visualization') }}" class="btn btn-outline-primary ml-2">
+    <i class="fas fa-microphone"></i> Learn About Voice Search
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<!-- Include the autocomplete script -->
+<script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // First check if the required DOM elements exist
+    const searchInput = document.getElementById('searchInput');
+    const voiceSearchButton = document.getElementById('voiceSearchButton');
+    const searchForm = document.getElementById('searchForm');
+    const numberInput = document.querySelector('input[name="nbr"]'); // Number of products input
+    
+    if (!searchInput) {
+      console.error("Search input element with ID 'searchInput' not found!");
+    }
+    
+    if (!voiceSearchButton) {
+      console.error("Voice search button with ID 'voiceSearchButton' not found!");
+    }
+    
+    if (!searchForm) {
+      console.error("Search form with ID 'searchForm' not found!");
+    }
+    
+    // Set default value for number of products if it's empty
+    if (numberInput && numberInput.value === '') {
+      numberInput.value = '10'; // Default to 10 products
+    }
+    
+    // Initialize autocomplete for traditional search
+    if (searchInput) {
+      try {
+        new SearchAutocomplete('#searchInput', {
+          onSelect: function(suggestion) {
+            // Auto-submit the form when a suggestion is selected
+            if (searchForm && numberInput && numberInput.value) {
+              searchForm.submit();
+            }
+          }
+        });
+        console.log("Autocomplete initialized successfully");
+      } catch (error) {
+        console.error("Error initializing autocomplete:", error);
+      }
+    }
+    
+    // Check browser support for speech recognition
+    const isSpeechRecognitionSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+    if (!isSpeechRecognitionSupported) {
+      console.warn("Speech Recognition is not supported in this browser");
+      if (voiceSearchButton) {
+        voiceSearchButton.title = "Voice search is not supported in this browser";
+        voiceSearchButton.disabled = true;
+        voiceSearchButton.style.opacity = "0.5";
+        voiceSearchButton.style.cursor = "not-allowed";
+      }
+    } else {
+      console.log("Speech Recognition is supported in this browser");
+    }
+    
+    // Add a status indicator for voice recognition
+    const statusIndicator = document.createElement('div');
+    statusIndicator.id = 'voice-status-indicator';
+    statusIndicator.style.display = 'none';
+    statusIndicator.style.color = '#dc3545';
+    statusIndicator.style.fontSize = '14px';
+    statusIndicator.style.marginTop = '5px';
+    statusIndicator.style.textAlign = 'center';
+    
+    // Add status indicator after input container
+    const inputContainer = document.getElementById('searchInputContainer');
+    if (inputContainer) {
+      inputContainer.appendChild(statusIndicator);
+    }
+    
+    // Initialize voice search with debug mode enabled
+    if (searchInput && voiceSearchButton) {
+      try {
+        const voiceSearch = new VoiceSearch({
+          targetInputId: 'searchInput',
+          buttonId: 'voiceSearchButton',
+          formId: 'searchForm',
+          autoSubmit: true, // Changed to true - auto-submit when voice input is complete
+          language: 'en-US',
+          maxDuration: 10000, // 10 seconds
+          debug: true, // Enable debug mode
+          onStart: function() {
+            console.log('Voice search started');
+            
+            // Make sure the number input has a value
+            if (numberInput && !numberInput.value) {
+              numberInput.value = '10'; // Default to 10 products
+            }
+            
+            // Show status indicator
+            statusIndicator.style.display = 'block';
+            statusIndicator.style.color = '#dc3545';
+            statusIndicator.innerHTML = '<i class="fas fa-microphone"></i> Listening...';
+            
+            // Add visual feedback to input
+            searchInput.classList.add('voice-active');
+            searchInput.placeholder = 'Listening...';
+          },
+          onResult: function(transcript, confidence, isFinal) {
+            console.log(`Voice search result: ${transcript} (confidence: ${confidence})`);
+            
+            // Make sure the input is updated
+            searchInput.value = transcript;
+            
+            // Update status indicator
+            if (isFinal) {
+              statusIndicator.style.color = '#28a745';
+              statusIndicator.innerHTML = `<i class="fas fa-check"></i> Recognized: "${transcript}"`;
+              
+              // Auto-submit after a short delay to allow the user to see what was recognized
+              // Note: The VoiceSearch class will handle submission if autoSubmit is true,
+              // but we're adding this as a backup
+              setTimeout(() => {
+                if (searchForm && transcript.trim() !== '' && numberInput && numberInput.value) {
+                  console.log("Auto-submitting form with query:", transcript);
+                  searchForm.submit();
+                }
+              }, 1000);
+            } else {
+              statusIndicator.innerHTML = `<i class="fas fa-microphone-alt"></i> Hearing: "${transcript}"`;
+            }
+          },
+          onEnd: function() {
+            console.log('Voice search ended');
+            
+            // Reset visual feedback
+            searchInput.classList.remove('voice-active');
+            searchInput.placeholder = 'Search for products...';
+            
+            // Hide status indicator after a delay
+            setTimeout(() => {
+              statusIndicator.style.display = 'none';
+            }, 2000);
+          },
+          onError: function(event) {
+            console.error('Voice search error:', event.error);
+            
+            // Show error in status indicator
+            statusIndicator.style.color = '#dc3545';
+            statusIndicator.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${event.error || 'Unknown error'}`;
+            statusIndicator.style.display = 'block';
+            
+            // Reset input
+            searchInput.classList.remove('voice-active');
+            searchInput.placeholder = 'Search for products...';
+            
+            // Hide status after a delay
+            setTimeout(() => {
+              statusIndicator.style.display = 'none';
+            }, 3000);
+          }
+        });
+        
+        console.log("Voice search initialized successfully");
+        
+        // Add CSS for voice active state
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+          .voice-active {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+          }
+        `;
+        document.head.appendChild(styleElement);
+        
+        // Add a manual test button for debugging
+        const debugContainer = document.createElement('div');
+        debugContainer.className = 'container mt-2';
+        debugContainer.innerHTML = `
+          <div class="row">
+            <div class="col-12">
+              <div class="alert alert-info">
+                <strong>Voice Search Debug:</strong> 
+                <button id="testVoiceAPI" class="btn btn-sm btn-outline-primary ml-2">Test Browser Speech API</button>
+                <span id="apiTestResult" class="ml-2"></span>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Add after search bar
+        const searchContainer = document.querySelector('.container');
+        if (searchContainer) {
+          searchContainer.parentNode.insertBefore(debugContainer, searchContainer.nextSibling);
+          
+          // Add event handler for test button
+          document.getElementById('testVoiceAPI').addEventListener('click', function() {
+            const resultSpan = document.getElementById('apiTestResult');
+            resultSpan.textContent = "Testing...";
+            
+            try {
+              const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+              recognition.lang = 'en-US';
+              recognition.onstart = function() {
+                resultSpan.textContent = "API is working! Listening...";
+                resultSpan.style.color = "#28a745";
+              };
+              recognition.onerror = function(event) {
+                resultSpan.textContent = `API Error: ${event.error}`;
+                resultSpan.style.color = "#dc3545";
+              };
+              recognition.onend = function() {
+                resultSpan.textContent += " (Finished)";
+              };
+              recognition.start();
+            } catch (error) {
+              resultSpan.textContent = `Error initializing API: ${error.message}`;
+              resultSpan.style.color = "#dc3545";
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error initializing voice search:", error);
+      }
+    }
+  });
+</script>
+{% endblock %}

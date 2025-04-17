@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300">
+  <!-- Background -->
+  <rect width="800" height="300" fill="#f8f9fa" rx="5" ry="5"/>
+  
+  <!-- Input Image -->
+  <rect x="50" y="100" width="100" height="100" fill="#bbdefb" stroke="#1565c0" stroke-width="2"/>
+  <text x="100" y="90" text-anchor="middle" font-size="14" fill="#1565c0" font-weight="bold">Input Image</text>
+  <text x="100" y="210" text-anchor="middle" font-size="12" fill="#1565c0">224×224×3</text>
+  
+  <!-- Convolution Layers -->
+  <!-- Layer 1 -->
+  <rect x="180" y="110" width="80" height="80" fill="#e1bee7" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="220" y="90" text-anchor="middle" font-size="14" fill="#6a1b9a" font-weight="bold">Conv1</text>
+  <text x="220" y="210" text-anchor="middle" font-size="12" fill="#6a1b9a">112×112×32</text>
+  
+  <!-- Layer 2 -->
+  <rect x="290" y="120" width="60" height="60" fill="#e1bee7" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="320" y="90" text-anchor="middle" font-size="14" fill="#6a1b9a" font-weight="bold">Conv2</text>
+  <text x="320" y="210" text-anchor="middle" font-size="12" fill="#6a1b9a">56×56×64</text>
+  
+  <!-- Layer 3 -->
+  <rect x="380" y="125" width="50" height="50" fill="#e1bee7" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="405" y="90" text-anchor="middle" font-size="14" fill="#6a1b9a" font-weight="bold">Conv3</text>
+  <text x="405" y="210" text-anchor="middle" font-size="12" fill="#6a1b9a">28×28×128</text>
+  
+  <!-- Layer 4 -->
+  <rect x="460" y="130" width="40" height="40" fill="#e1bee7" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="480" y="90" text-anchor="middle" font-size="14" fill="#6a1b9a" font-weight="bold">Conv4</text>
+  <text x="480" y="210" text-anchor="middle" font-size="12" fill="#6a1b9a">14×14×256</text>
+  
+  <!-- Layer 5 -->
+  <rect x="530" y="135" width="30" height="30" fill="#e1bee7" stroke="#6a1b9a" stroke-width="2"/>
+  <text x="545" y="90" text-anchor="middle" font-size="14" fill="#6a1b9a" font-weight="bold">Conv5</text>
+  <text x="545" y="210" text-anchor="middle" font-size="12" fill="#6a1b9a">7×7×512</text>
+  
+  <!-- Global Pooling -->
+  <rect x="590" y="135" width="30" height="30" fill="#c8e6c9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="605" y="90" text-anchor="middle" font-size="14" fill="#2e7d32" font-weight="bold">Pool</text>
+  <text x="605" y="210" text-anchor="middle" font-size="12" fill="#2e7d32">1×1×1280</text>
+  
+  <!-- Feature Vector -->
+  <rect x="650" y="130" width="100" height="40" fill="#ffcdd2" stroke="#b71c1c" stroke-width="2" rx="10" ry="10"/>
+  <text x="700" y="90" text-anchor="middle" font-size="14" fill="#b71c1c" font-weight="bold">Feature Vector</text>
+  <text x="700" y="210" text-anchor="middle" font-size="12" fill="#b71c1c">1280-dim</text>
+  
+  <!-- Connection Lines -->
+  <line x1="150" y1="150" x2="180" y2="150" stroke="#1565c0" stroke-width="2"/>
+  <line x1="260" y1="150" x2="290" y2="150" stroke="#6a1b9a" stroke-width="2"/>
+  <line x1="350" y1="150" x2="380" y2="150" stroke="#6a1b9a" stroke-width="2"/>
+  <line x1="430" y1="150" x2="460" y2="150" stroke="#6a1b9a" stroke-width="2"/>
+  <line x1="500" y1="150" x2="530" y2="150" stroke="#6a1b9a" stroke-width="2"/>
+  <line x1="560" y1="150" x2="590" y2="150" stroke="#6a1b9a" stroke-width="2"/>
+  <line x1="620" y1="150" x2="650" y2="150" stroke="#2e7d32" stroke-width="2"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" font-size="20" font-weight="bold">MobileNetV2 Architecture (Simplified)</text>
+  
+  <!-- Notes -->
+  <text x="400" y="260" text-anchor="middle" font-size="14" font-style="italic">Feature extraction process: from raw pixels to semantic features</text>
+</svg>

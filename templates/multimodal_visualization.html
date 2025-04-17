@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">How Our Multimodal Search Works</h1>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-brain"></i> The Power of Multimodal AI</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Our multimodal search uses advanced AI to understand both images and natural language, combining these signals to find exactly what you're looking for.</p>
+                    
+                    <div class="row mt-5">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Traditional vs. Multimodal Search</h4>
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Traditional Search</th>
+                                        <th>Multimodal AI Search</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Single input type (text or image)</td>
+                                        <td>Multiple input types combined</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Limited understanding of context</td>
+                                        <td>Rich contextual understanding</td>
+                                    </tr>
+                                    <tr>
+                                        <td>"red dress" or <i>image of a dress</i></td>
+                                        <td><i>image of a dress</i> + "in red color under $100"</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Can miss user's complete intent</td>
+                                        <td>Captures complex, multi-faceted requests</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Technology Behind Multimodal Search</h4>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <i class="fas fa-camera text-primary mr-2"></i>
+                                    <strong>Computer Vision:</strong> MobileNetV2 for visual feature extraction
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-comment text-success mr-2"></i>
+                                    <strong>Natural Language Processing:</strong> BERT embeddings for semantic understanding
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-code-branch text-danger mr-2"></i>
+                                    <strong>Feature Fusion:</strong> AI-weighted combination of visual and textual signals
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-filter text-warning mr-2"></i>
+                                    <strong>Attribute Extraction:</strong> Identifying colors, styles, price ranges
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-balance-scale text-info mr-2"></i>
+                                    <strong>User-controlled Weighting:</strong> Adjust balance between visual and textual similarity
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-cogs"></i> How It Works</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-5">
+                        <h4>The Multimodal Search Pipeline</h4>
+                        
+                        <!-- Flow diagram -->
+                        <div class="my-5">
+                            <svg width="100%" height="260" viewBox="0 0 1000 260" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Definitions for the arrow marker -->
+                                <defs>
+                                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                        <path d="M0,0 L0,6 L9,3 z" fill="#000"/>
+                                    </marker>
+                                </defs>
+
+                                <!-- Image Input Section -->
+                                <rect x="10" y="10" width="150" height="80" rx="10" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+                                <text x="85" y="35" text-anchor="middle" font-size="14" font-weight="bold">Image Input</text>
+                                <text x="85" y="60" text-anchor="middle" font-size="12">Visual Features</text>
+                                <path d="M 160 50 L 200 50" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Text Input Section -->
+                                <rect x="10" y="130" width="150" height="80" rx="10" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+                                <text x="85" y="155" text-anchor="middle" font-size="14" font-weight="bold">Text Input</text>
+                                <text x="85" y="180" text-anchor="middle" font-size="12">Semantic Features</text>
+                                <path d="M 160 170 L 200 170" stroke="#2E7D32" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Image Analysis Section -->
+                                <rect x="200" y="10" width="150" height="80" rx="10" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+                                <text x="275" y="35" text-anchor="middle" font-size="14" font-weight="bold">Image Analysis</text>
+                                <text x="275" y="60" text-anchor="middle" font-size="12">MobileNetV2</text>
+                                <path d="M 350 50 L 390 50" stroke="#1565C0" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Text Analysis Section -->
+                                <rect x="200" y="130" width="150" height="80" rx="10" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+                                <text x="275" y="155" text-anchor="middle" font-size="14" font-weight="bold">Text Analysis</text>
+                                <text x="275" y="180" text-anchor="middle" font-size="12">BERT + spaCy</text>
+                                <path d="M 350 170 L 390 170" stroke="#2E7D32" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Visual Embeddings Section -->
+                                <rect x="390" y="10" width="150" height="80" rx="10" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+                                <text x="465" y="35" text-anchor="middle" font-size="14" font-weight="bold">Visual Embeddings</text>
+                                <text x="465" y="60" text-anchor="middle" font-size="12">1,280-dim Vector</text>
+                                <path d="M 540 50 L 580 100" stroke="#673AB7" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Text Embeddings Section -->
+                                <rect x="390" y="130" width="150" height="80" rx="10" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+                                <text x="465" y="155" text-anchor="middle" font-size="14" font-weight="bold">Text Embeddings</text>
+                                <text x="465" y="180" text-anchor="middle" font-size="12">Semantic Vector</text>
+                                <path d="M 540 170 L 580 120" stroke="#673AB7" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Multimodal Fusion Section -->
+                                <rect x="580" y="90" width="150" height="80" rx="10" fill="#EDE7F6" stroke="#4527A0" stroke-width="2"/>
+                                <text x="655" y="115" text-anchor="middle" font-size="14" font-weight="bold">Multimodal Fusion</text>
+                                <text x="655" y="140" text-anchor="middle" font-size="12">Weighted Ensemble</text>
+                                <path d="M 730 130 L 770 130" stroke="#4527A0" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                <!-- Ranked Results Section -->
+                                <rect x="770" y="90" width="150" height="80" rx="10" fill="#FFF3E0" stroke="#E65100" stroke-width="2"/>
+                                <text x="845" y="115" text-anchor="middle" font-size="14" font-weight="bold">Ranked Results</text>
+                                <text x="845" y="140" text-anchor="middle" font-size="12">Personalized Products</text>
+
+                                <!-- Example Text -->
+                                <text x="500" y="240" text-anchor="middle" font-size="14" font-style="italic">Example: "Find a dress like this but in red color"</text>
+                            </svg>
+                        </div>
+                        
+                        <div class="mt-5">
+                            <h4>Example: "Find a dress like this but in red color"</h4>
+                            
+                            <div class="table-responsive mt-3">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Process Step</th>
+                                            <th>What Happens</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Image Analysis</td>
+                                            <td>
+                                                <ul class="mb-0 text-left">
+                                                    <li>Extracts 1,280 visual features using MobileNetV2</li>
+                                                    <li>Identifies shape, pattern, and style of the dress</li>
+                                                    <li>Creates a visual signature of the reference image</li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Text Analysis</td>
+                                            <td>
+                                                <ul class="mb-0 text-left">
+                                                    <li>Processes "Find a dress like this but in red color"</li>
+                                                    <li>Identifies target color: <strong>red</strong></li>
+                                                    <li>Recognizes modification intent of the query</li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Multimodal Fusion</td>
+                                            <td>
+                                                <ul class="mb-0 text-left">
+                                                    <li>Combines visual match scores with text query requirements</li>
+                                                    <li>Adds boosting to products with "red" color</li>
+                                                    <li>Balances both signals based on user-defined weights</li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Result Ranking</td>
+                                            <td>
+                                                <ul class="mb-0 text-left">
+                                                    <li>Returns products with similar visual style to reference image</li>
+                                                    <li>Prioritizes products matching "red" color</li>
+                                                    <li>Displays scores for both visual and text matches</li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h3><i class="fas fa-lightbulb"></i> How to Get the Best Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Effective Image Selection</h4>
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Tips for Reference Images</h5>
+                                    <ul>
+                                        <li><strong>Clear, well-lit images</strong> work best</li>
+                                        <li>Choose images with the product as the <strong>main focus</strong></li>
+                                        <li>Images with <strong>minimal background clutter</strong> improve accuracy</li>
+                                        <li>Product photos showing <strong>multiple angles</strong> help find better matches</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Effective Query Formulation</h4>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Tips for Text Queries</h5>
+                                    <ul>
+                                        <li>Be specific about <strong>colors</strong> (e.g., "dark blue" vs. "blue")</li>
+                                        <li>Include <strong>price ranges</strong> (e.g., "under $50")</li>
+                                        <li>Specify <strong>materials</strong> (e.g., "leather", "cotton")</li>
+                                        <li>Mention <strong>occasions</strong> (e.g., "for wedding", "casual")</li>
+                                        <li>Indicate <strong>seasons</strong> (e.g., "winter", "summer")</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mb-5">
+        <a href="{{ url_for('multimodal_search_route') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search-plus"></i> Try Multimodal Search Now
+        </a>
+    </div>
+</div>
+{% endblock %}

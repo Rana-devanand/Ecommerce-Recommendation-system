@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-camera"></i> Image Search</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Find products by uploading an image or taking a photo</p>
+                    <p>Upload an image to find visually similar products in our catalog.</p>
+                    <p class="text-right">
+                        <a href="{{ url_for('image_search_visualization') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-info-circle"></i> How does this work?
+                        </a>
+                    </p>
+                    
+                    <div class="mt-4 mb-3">
+                        <form action="{{ url_for('image_search') }}" method="post" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="image_file">
+                                    <div class="btn btn-outline-info btn-lg">
+                                        <i class="fas fa-upload"></i> Choose an image to upload
+                                    </div>
+                                </label>
+                                <input type="file" id="image_file" name="image_file" accept="image/*" 
+                                       style="display:none;" onchange="displayFileName(this)">
+                                <p id="file-name-display" class="mt-2"></p>
+                            </div>
+                            
+                            <button class="btn btn-info btn-lg" type="submit">
+                                <i class="fas fa-search"></i> Search by Image
+                            </button>
+                        </form>
+                    </div>
+                    
+                    {% if uploaded_image %}
+                    <div class="row mt-4">
+                        <div class="col-md-6 offset-md-3">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5>Your Uploaded Image</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <img src="{{ url_for('static', filename=uploaded_image) }}" 
+                                         class="img-fluid" alt="Uploaded Image" 
+                                         style="max-height: 300px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <h5>How it works:</h5>
+                            <ul class="text-left">
+                                <li>Upload a photo of a product you like</li>
+                                <li>Our AI analyzes visual features like colors, patterns, and shapes</li>
+                                <li>We find visually similar items in our catalog</li>
+                                <li>Results are ranked by visual similarity</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if message %}
+    <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    
+    {% if search_results is defined and not search_results.empty %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2>Visually Similar Products</h2>
+            <p>Showing {{ search_results|length }} products sorted by visual similarity</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for index, product in search_results.iterrows() %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card h-100">
+                <!-- Similarity score badge -->
+                <div class="position-absolute" style="top:10px; right:10px;">
+                    <span class="badge badge-pill badge-info">
+                        {{ "%.0f"|format(product.similarity * 100) }}% match
+                    </span>
+                </div>
+                
+                <a href="{{ url_for('view_product', product_name=product['Name']) }}">
+                    <img src="{{ product['ImageURL'] }}" class="card-img-top" alt="{{ product['Name'] }}" 
+                         style="height: 200px; object-fit: cover;">
+                </a>
+                <div class="card-body">
+                    <h5 class="card-title">{{ truncate(product['Name'],20) }}</h5>
+                    <p class="card-text">Brand: {{ product['Brand'] }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">Rating: {{ product['Rating'] }} ★</small>
+                    </p>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('view_product', product_name=product['Name']) }}" 
+                           class="btn btn-primary">View Details</a>
+                        
+                        <!-- Add feedback button for logged in users -->
+                        {% if 'user_id' in session %}
+                        <button class="btn btn-outline-secondary btn-sm" data-toggle="modal" 
+                                data-target="#feedbackModal-{{ index }}">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback Modal -->
+        {% if 'user_id' in session %}
+        <div class="modal fade" id="feedbackModal-{{ index }}" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Rate this search result</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="{{ url_for('recommendation_feedback') }}" method="post">
+                        <div class="modal-body">
+                            <p>How relevant is <strong>{{ product['Name'] }}</strong> to your image?</p>
+                            
+                            <input type="hidden" name="product_name" value="{{ product['Name'] }}">
+                            <input type="hidden" name="recommendation_type" value="Image-Search">
+                            
+                            <div class="form-group">
+                                <label>Rating:</label>
+                                <div class="rating">
+                                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="rating" value="1"> 1 ★
+                                        </label>
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="rating" value="2"> 2 ★
+                                        </label>
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="rating" value="3"> 3 ★
+                                        </label>
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="rating" value="4"> 4 ★
+                                        </label>
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="rating" value="5" checked> 5 ★
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="comments-{{ index }}">Comments (optional):</label>
+                                <textarea class="form-control" id="comments-{{ index }}" name="comments" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Links to other search options -->
+    <div class="mt-4 mb-5 text-center">
+        <a href="{{ url_for('main') }}" class="btn btn-outline-secondary mr-3">
+            <i class="fas fa-arrow-left"></i> Traditional Search
+        </a>
+        <a href="{{ url_for('nlp_search_route') }}" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Natural Language Search
+        </a>
+    </div>
+</div>
+
+<script>
+function displayFileName(input) {
+    var fileName = input.files[0] ? input.files[0].name : "No file chosen";
+    document.getElementById('file-name-display').innerHTML = fileName;
+    
+    // Preview the image if possible
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            // Create preview if it doesn't exist
+            var preview = document.getElementById('image-preview');
+            if (!preview) {
+                preview = document.createElement('img');
+                preview.id = 'image-preview';
+                preview.className = 'img-fluid mt-3';
+                preview.style.maxHeight = '200px';
+                document.getElementById('file-name-display').parentNode.appendChild(preview);
+            }
+            preview.src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

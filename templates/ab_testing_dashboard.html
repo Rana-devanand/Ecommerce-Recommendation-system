@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">A/B Testing Dashboard</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h4 class="card-title">Test Statistics</h4>
+                    <div class="row text-center">
+                        <div class="col-md-6">
+                            <div class="display-4">{{ active_count }}</div>
+                            <div>Active Tests</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="display-4">{{ total_count }}</div>
+                            <div>Total Tests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4 class="card-title">Create New Test</h4>
+                    <p>Set up a new A/B test to optimize recommendation weights</p>
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#createTestModal">
+                        <i class="fas fa-plus"></i> Create New Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Tests -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>A/B Tests</h3>
+                </div>
+                <div class="card-body">
+                    {% if tests %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Variants</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in tests %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('view_ab_test', test_id=test.test_id) }}">{{ test.name }}</a>
+                                        <div class="small text-muted">{{ test.description }}</div>
+                                    </td>
+                                    <td>
+                                        {% if test.status == 'active' %}
+                                            <span class="badge badge-success">Active</span>
+                                        {% elif test.status == 'completed' %}
+                                            <span class="badge badge-secondary">Completed</span>
+                                        {% elif test.status == 'paused' %}
+                                            <span class="badge badge-warning">Paused</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ test.variants|length }}</td>
+                                    <td>{{ test.start_date }}</td>
+                                    <td>{{ test.end_date }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('view_ab_test', test_id=test.test_id) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-chart-bar"></i> Results
+                                            </a>
+                                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteTest('{{ test.test_id }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% if test.status == 'active' %}
+                                                <button class="btn btn-sm btn-warning" onclick="updateTestStatus('{{ test.test_id }}', 'paused')">
+                                                    <i class="fas fa-pause"></i>
+                                                </button>
+                                            {% elif test.status == 'paused' %}
+                                                <button class="btn btn-sm btn-success" onclick="updateTestStatus('{{ test.test_id }}', 'active')">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if test.status == 'completed' or (test.metrics and test.metrics|length > 0) %}
+                                                <button class="btn btn-sm btn-primary" onclick="applyBestVariant('{{ test.test_id }}')">
+                                                    <i class="fas fa-check"></i> Apply Best
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p>No A/B tests have been created yet. Click the button above to create your first test.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Link to explanation page -->
+    <div class="text-center mb-5">
+        <a href="{{ url_for('ab_testing_explanation') }}" class="btn btn-outline-info">
+            <i class="fas fa-info-circle"></i> Learn How A/B Testing Works
+        </a>
+    </div>
+</div>
+
+<!-- Create Test Modal -->
+<div class="modal fade" id="createTestModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New A/B Test</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createTestForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="testName">Test Name</label>
+                        <input type="text" class="form-control" id="testName" name="name" required 
+                               placeholder="e.g., Recommendation Weights Optimization">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="testDescription">Description</label>
+                        <textarea class="form-control" id="testDescription" name="description" rows="2" required
+                                  placeholder="Briefly describe the purpose of this test"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="endDate">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="variantCount">Number of Variants</label>
+                        <select class="form-control" id="variantCount" name="variant_count" onchange="updateVariants()">
+                            <option value="2">2 (Control + 1 Variant)</option>
+                            <option value="3">3 (Control + 2 Variants)</option>
+                            <option value="4">4 (Control + 3 Variants)</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            The first variant is always the control (current weights)
+                        </small>
+                    </div>
+                    
+                    <hr>
+                    <h5>Variant Configurations</h5>
+                    
+                    <!-- Control variant (read-only) -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <strong>Control Variant</strong> (Current Configuration)
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Content-Based Weight</label>
+                                        <input type="text" class="form-control" value="0.3" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Collaborative Weight</label>
+                                        <input type="text" class="form-control" value="0.2" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Neural Weight</label>
+                                        <input type="text" class="form-control" value="0.5" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic variants -->
+                    <div id="variantsContainer">
+                        <!-- Variant 1 -->
+                        <div class="card mb-3 variant-config" id="variant1">
+                            <div class="card-header bg-light">
+                                <strong>Variant 1</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="content_weight_1">Content-Based Weight</label>
+                                            <input type="number" class="form-control weight-input" 
+                                                   id="content_weight_1" name="content_weight_1" 
+                                                   min="0" max="1" step="0.05" value="0.5"
+                                                   onchange="normalizeWeights(1)">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="collab_weight_1">Collaborative Weight</label>
+                                            <input type="number" class="form-control weight-input" 
+                                                   id="collab_weight_1" name="collab_weight_1" 
+                                                   min="0" max="1" step="0.05" value="0.25"
+                                                   onchange="normalizeWeights(1)">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="neural_weight_1">Neural Weight</label>
+                                            <input type="number" class="form-control weight-input" 
+                                                   id="neural_weight_1" name="neural_weight_1" 
+                                                   min="0" max="1" step="0.05" value="0.25"
+                                                   onchange="normalizeWeights(1)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-info" id="content_bar_1" role="progressbar" 
+                                         style="width: 50%;">50%</div>
+                                    <div class="progress-bar bg-success" id="collab_bar_1" role="progressbar" 
+                                         style="width: 25%;">25%</div>
+                                    <div class="progress-bar bg-danger" id="neural_bar_1" role="progressbar" 
+                                         style="width: 25%;">25%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this test? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Best Variant Modal -->
+<div class="modal fade" id="applyBestModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply Best Variant</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="applyBestForm">
+                <div class="modal-body">
+                    <p>This will apply the weights from the best-performing variant as the default weights for all users.</p>
+                    
+                    <div class="form-group">
+                        <label for="primaryMetric">Primary Metric</label>
+                        <select class="form-control" id="primaryMetric" name="primary_metric">
+                            <option value="avg_rating">Average Rating</option>
+                            <option value="ctr">Click-Through Rate</option>
+                            <option value="conversion_rate">Conversion Rate</option>
+                        </select>
+                        <small class="form-text text-muted">Select the metric to use for determining the best variant</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Best Variant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set default dates for new test form
+    document.addEventListener('DOMContentLoaded', function() {
+        // Start date = today
+        const today = new Date();
+        const startDateInput = document.getElementById('startDate');
+        startDateInput.value = today.toISOString().split('T')[0];
+        
+        // End date = 30 days from now
+        const endDate = new Date();
+        endDate.setDate(today.getDate() + 30);
+        const endDateInput = document.getElementById('endDate');
+        endDateInput.value = endDate.toISOString().split('T')[0];
+        
+        // Initialize variants
+        updateVariants();
+    });
+    
+    // Handle dynamic variant creation
+    function updateVariants() {
+        const variantCount = parseInt(document.getElementById('variantCount').value);
+        const container = document.getElementById('variantsContainer');
+        
+        // Clear existing variants
+        container.innerHTML = '';
+        
+        // Create new variant cards
+        for (let i = 1; i < variantCount; i++) {
+            const variantHtml = `
+                <div class="card mb-3 variant-config" id="variant${i}">
+                    <div class="card-header bg-light">
+                        <strong>Variant ${i}</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="content_weight_${i}">Content-Based Weight</label>
+                                    <input type="number" class="form-control weight-input" 
+                                           id="content_weight_${i}" name="content_weight_${i}" 
+                                           min="0" max="1" step="0.05" value="${0.3 + (i * 0.1)}"
+                                           onchange="normalizeWeights(${i})">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="collab_weight_${i}">Collaborative Weight</label>
+                                    <input type="number" class="form-control weight-input" 
+                                           id="collab_weight_${i}" name="collab_weight_${i}" 
+                                           min="0" max="1" step="0.05" value="${0.2 + (i * 0.05)}"
+                                           onchange="normalizeWeights(${i})">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="neural_weight_${i}">Neural Weight</label>
+                                    <input type="number" class="form-control weight-input" 
+                                           id="neural_weight_${i}" name="neural_weight_${i}" 
+                                           min="0" max="1" step="0.05" value="${0.5 - (i * 0.15)}"
+                                           onchange="normalizeWeights(${i})">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-info" id="content_bar_${i}" role="progressbar" 
+                                 style="width: ${(0.3 + (i * 0.1)) * 100}%;">${Math.round((0.3 + (i * 0.1)) * 100)}%</div>
+                            <div class="progress-bar bg-success" id="collab_bar_${i}" role="progressbar" 
+                                 style="width: ${(0.2 + (i * 0.05)) * 100}%;">${Math.round((0.2 + (i * 0.05)) * 100)}%</div>
+                            <div class="progress-bar bg-danger" id="neural_bar_${i}" role="progressbar" 
+                                 style="width: ${(0.5 - (i * 0.15)) * 100}%;">${Math.round((0.5 - (i * 0.15)) * 100)}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML += variantHtml;
+        }
+        
+        // Update weights visualization for each variant
+        for (let i = 1; i < variantCount; i++) {
+            normalizeWeights(i);
+        }
+    }
+    
+    // Normalize weights to sum to 1 and update visualization
+    function normalizeWeights(variantIndex) {
+        const contentWeight = parseFloat(document.getElementById(`content_weight_${variantIndex}`).value) || 0;
+        const collabWeight = parseFloat(document.getElementById(`collab_weight_${variantIndex}`).value) || 0;
+        const neuralWeight = parseFloat(document.getElementById(`neural_weight_${variantIndex}`).value) || 0;
+        
+        // Calculate total
+        const total = contentWeight + collabWeight + neuralWeight;
+        
+        // Normalize weights
+        let normalizedContent, normalizedCollab, normalizedNeural;
+        
+        if (total > 0) {
+            normalizedContent = contentWeight / total;
+            normalizedCollab = collabWeight / total;
+            normalizedNeural = neuralWeight / total;
+        } else {
+            // Default to equal weights if all are zero
+            normalizedContent = normalizedCollab = normalizedNeural = 1/3;
+        }
+        
+        // Update progress bars
+        const contentBar = document.getElementById(`content_bar_${variantIndex}`);
+        const collabBar = document.getElementById(`collab_bar_${variantIndex}`);
+        const neuralBar = document.getElementById(`neural_bar_${variantIndex}`);
+        
+        contentBar.style.width = `${normalizedContent * 100}%`;
+        contentBar.innerText = `${Math.round(normalizedContent * 100)}%`;
+        
+        collabBar.style.width = `${normalizedCollab * 100}%`;
+        collabBar.innerText = `${Math.round(normalizedCollab * 100)}%`;
+        
+        neuralBar.style.width = `${normalizedNeural * 100}%`;
+        neuralBar.innerText = `${Math.round(normalizedNeural * 100)}%`;
+    }
+    
+    // Handle test creation form submission
+    document.getElementById('createTestForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch("{{ url_for('create_ab_test') }}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Test created successfully!');
+                window.location.reload();
+            } else {
+                alert('Error creating test: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while creating the test.');
+        });
+    });
+    
+    // Handle test deletion
+    let testIdToDelete;
+    
+    function confirmDeleteTest(testId) {
+        testIdToDelete = testId;
+        $('#deleteConfirmModal').modal('show');
+    }
+    
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (testIdToDelete) {
+            fetch(`{{ url_for('delete_ab_test', test_id='') }}${testIdToDelete}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#deleteConfirmModal').modal('hide');
+                    window.location.reload();
+                } else {
+                    alert('Error deleting test: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the test.');
+            });
+        }
+    });
+    
+    // Handle test status update
+    function updateTestStatus(testId, status) {
+        const formData = new FormData();
+        formData.append('status', status);
+        
+        fetch(`{{ url_for('update_ab_test', test_id='') }}${testId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error updating test status: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the test status.');
+        });
+    }
+    
+    // Handle applying best variant
+    let testIdForBest;
+    
+    function applyBestVariant(testId) {
+        testIdForBest = testId;
+        $('#applyBestModal').modal('show');
+    }
+    
+    document.getElementById('applyBestForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (testIdForBest) {
+            const formData = new FormData(this);
+            
+            fetch(`{{ url_for('apply_best_variant', test_id='') }}${testIdForBest}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#applyBestModal').modal('hide');
+                    alert('Successfully applied the best variant weights!');
+                    window.location.reload();
+                } else {
+                    alert('Error applying best variant: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while applying the best variant.');
+            });
+        }
+    });
+</script>
+{% endblock %}

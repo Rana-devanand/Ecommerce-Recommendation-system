@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Order History - Ecommerce Recommendation System{% endblock %}
+
+{% block additional_styles %}
+.order-card {
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.order-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+.order-items {
+    padding: 15px;
+}
+.item-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.item-row:last-child {
+    border-bottom: none;
+}
+.item-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.item-details {
+    flex-grow: 1;
+    padding-left: 15px;
+}
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-top: 1px solid #eee;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+.status-badge-pending {
+    background-color: #ffc107;
+}
+.status-badge-paid {
+    background-color: #17a2b8;
+}
+.status-badge-shipped {
+    background-color: #007bff;
+}
+.status-badge-delivered {
+    background-color: #28a745;
+}
+.empty-orders {
+    text-align: center;
+    padding: 50px 0;
+}
+.empty-orders i {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Your Order History</h1>
+            
+            {% if message %}
+                <div class="alert alert-{{ message_type }}">{{ message }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if orders %}
+        {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <h5 class="mb-0">Order #{{ order.id }}</h5>
+                        <small class="text-muted">Placed on {{ order.order_date.strftime('%B %d, %Y') }}</small>
+                    </div>
+                    <div class="text-right">
+                        <span class="badge status-badge-{{ order.status }} text-white">{{ order.status|capitalize }}</span>
+                        <h5 class="mt-1">${{ "%.2f"|format(order.total_amount) }}</h5>
+                    </div>
+                </div>
+                
+                <div class="order-items">
+                    {% for item in order.items %}
+                        <div class="item-row">
+                            <img src="{{ item.image_url }}" alt="{{ item.product_name }}" class="item-image">
+                            <div class="item-details">
+                                <h6 class="mb-0">{{ item.product_name }}</h6>
+                                <small class="text-muted">Qty: {{ item.quantity }} × ${{ "%.2f"|format(item.price) }}</small>
+                            </div>
+                            <div>
+                                <strong>${{ "%.2f"|format(item.quantity * item.price) }}</strong>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="order-footer">
+                    <div>
+                        <span class="text-muted">Shipping to: {{ order.address.city }}, {{ order.address.state }}</span>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('view_order', order_id=order.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> View Order Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+    {% else %}
+        <div class="empty-orders">
+            <i class="fas fa-box-open"></i>
+            <h3>No orders yet</h3>
+            <p class="text-muted">You haven't placed any orders yet.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-shopping-bag mr-2"></i>Start Shopping
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

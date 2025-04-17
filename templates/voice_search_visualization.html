@@ -1,0 +1,612 @@
+{% extends 'base.html' %}
+
+{% block title %}Voice Search Technology - How It Works{% endblock %}
+
+{% block additional_styles %}
+.feature-card {
+    border-radius: 8px;
+    transition: transform 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.tech-diagram {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.speech-wave {
+    width: 100%;
+    height: 100px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.speech-wave .wave {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(0,123,255,0.2), rgba(0,123,255,0));
+    opacity: 0.8;
+}
+
+.speech-wave .wave:nth-child(1) {
+    animation: wave-animation 3s infinite linear;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%230d6efd' fill-opacity='0.2' d='M0,224L48,218.7C96,213,192,203,288,208C384,213,480,235,576,234.7C672,235,768,213,864,186.7C960,160,1056,128,1152,128C1248,128,1344,160,1392,176L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.speech-wave .wave:nth-child(2) {
+    animation: wave-animation 5s infinite linear;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%230d6efd' fill-opacity='0.3' d='M0,64L48,80C96,96,192,128,288,133.3C384,139,480,117,576,122.7C672,128,768,160,864,165.3C960,171,1056,149,1152,149.3C1248,149,1344,171,1392,181.3L1440,192L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'%3E%3C/path%3E%3C/svg%3E");
+}
+
+@keyframes wave-animation {
+    0% { background-position-x: 0; }
+    100% { background-position-x: 1440px; }
+}
+
+.step-card {
+    border-left: 3px solid #007bff;
+    padding-left: 20px;
+    margin-bottom: 30px;
+}
+
+.demo-section {
+    background-color: #f8f9fa;
+    padding: 40px 0;
+    border-radius: 8px;
+}
+
+.voice-search-demo {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.browser-compatibility td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.browser-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.compatibility-excellent {
+    color: #28a745;
+}
+
+.compatibility-good {
+    color: #17a2b8;
+}
+
+.compatibility-limited {
+    color: #ffc107;
+}
+
+.compatibility-poor {
+    color: #dc3545;
+}
+
+/* More detailed wave animation */
+.voice-waves {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+}
+
+.voice-waves .voice-bar {
+    display: inline-block;
+    width: 4px;
+    margin: 0 2px;
+    background-color: #007bff;
+    animation: voice-wave 1.2s infinite ease-in-out;
+    border-radius: 2px;
+}
+
+.voice-waves .voice-bar:nth-child(1) { height: 15px; animation-delay: 0s; }
+.voice-waves .voice-bar:nth-child(2) { height: 25px; animation-delay: 0.1s; }
+.voice-waves .voice-bar:nth-child(3) { height: 35px; animation-delay: 0.2s; }
+.voice-waves .voice-bar:nth-child(4) { height: 45px; animation-delay: 0.3s; }
+.voice-waves .voice-bar:nth-child(5) { height: 40px; animation-delay: 0.4s; }
+.voice-waves .voice-bar:nth-child(6) { height: 30px; animation-delay: 0.5s; }
+.voice-waves .voice-bar:nth-child(7) { height: 20px; animation-delay: 0.6s; }
+.voice-waves .voice-bar:nth-child(8) { height: 10px; animation-delay: 0.7s; }
+
+@keyframes voice-wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.5); }
+}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4">Voice Search Technology</h1>
+            <p class="lead">Understanding how our advanced voice recognition works</p>
+        </div>
+    </div>
+
+    <!-- Animated Voice Wave Visualization -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="speech-wave">
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Introduction Section -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <h2>Enhancing Your Shopping Experience</h2>
+            <p>Our voice search technology leverages the powerful Web Speech API to provide a seamless, hands-free shopping experience. With advanced natural language processing, you can search products, browse categories, and interact with our AI assistant using just your voice.</p>
+            <p>Voice search is especially useful when:</p>
+            <ul>
+                <li>You're multitasking or on the go</li>
+                <li>You're looking for something specific but complex</li>
+                <li>You want to describe a product naturally</li>
+                <li>You're using a mobile device or hands are occupied</li>
+            </ul>
+        </div>
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="voice-waves">
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+                <div class="voice-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Features -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Key Features</h2>
+            <p class="lead">What makes our voice search special</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h5>Natural Language Processing</h5>
+                    <p>Understand complex queries and natural speech patterns for more accurate search results</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-success">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5>Context Awareness</h5>
+                    <p>Recognizes intent and extracts product attributes from your speech for better filtering</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-info">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h5>AI Assistant Integration</h5>
+                    <p>Seamlessly speak with our AI shopping assistant for personalized recommendations</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-warning">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5>Privacy-Focused</h5>
+                    <p>All voice processing happens directly in your browser with no recordings stored</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-danger">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h5>Cross-Browser Support</h5>
+                    <p>Works on all major modern browsers with optimized performance</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-secondary">
+                        <i class="fas fa-universal-access"></i>
+                    </div>
+                    <h5>Accessibility</h5>
+                    <p>Makes our shopping platform more accessible to all users regardless of ability</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>How Voice Search Works</h2>
+            <p class="lead">Behind the scenes technology</p>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="step-card">
+                <h5>1. Voice Capture</h5>
+                <p>When you click the microphone icon, your browser's Web Speech API activates your device's microphone to capture audio input.</p>
+            </div>
+            
+            <div class="step-card">
+                <h5>2. Speech Recognition</h5>
+                <p>Audio is processed in real-time by the browser's speech recognition engine, converting sound waves into text.</p>
+            </div>
+            
+            <div class="step-card">
+                <h5>3. Natural Language Processing</h5>
+                <p>Our system analyzes the text to identify intent, product attributes, categories, and other important details.</p>
+            </div>
+            
+            <div class="step-card">
+                <h5>4. Query Enhancement</h5>
+                <p>The processed query is enhanced with identified attributes to provide more accurate search results.</p>
+            </div>
+            
+            <div class="step-card">
+                <h5>5. Result Generation</h5>
+                <p>Our search engine finds matching products and presents them ranked by relevance to your voice query.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='img/voice_search_diagram.jpg') }}" alt="Voice Search Technology Diagram" class="tech-diagram" onerror="this.src='{{ url_for('static', filename='img/placeholder.svg') }}'; this.alt='Voice Search Technology Visualization';">
+        </div>
+    </div>
+
+    <!-- Browser Compatibility -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Browser Compatibility</h2>
+            <p class="lead">Voice search works best in these browsers</p>
+        </div>
+        
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Browser</th>
+                            <th>Support Level</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-center">
+                                <div class="browser-icon">
+                                    <i class="fab fa-chrome"></i>
+                                </div>
+                                <div>Google Chrome</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="compatibility-excellent">
+                                    <i class="fas fa-check-circle"></i> Excellent
+                                </span>
+                            </td>
+                            <td>Full support with best recognition accuracy and performance</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">
+                                <div class="browser-icon">
+                                    <i class="fab fa-edge"></i>
+                                </div>
+                                <div>Microsoft Edge</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="compatibility-excellent">
+                                    <i class="fas fa-check-circle"></i> Excellent
+                                </span>
+                            </td>
+                            <td>Full support and very good recognition accuracy</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">
+                                <div class="browser-icon">
+                                    <i class="fab fa-safari"></i>
+                                </div>
+                                <div>Safari</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="compatibility-good">
+                                    <i class="fas fa-check-circle"></i> Good
+                                </span>
+                            </td>
+                            <td>Good support on iOS and macOS, may require explicit permission</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">
+                                <div class="browser-icon">
+                                    <i class="fab fa-firefox"></i>
+                                </div>
+                                <div>Firefox</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="compatibility-limited">
+                                    <i class="fas fa-exclamation-circle"></i> Limited
+                                </span>
+                            </td>
+                            <td>Limited support, may require additional permissions</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center">
+                                <div class="browser-icon">
+                                    <i class="fab fa-opera"></i>
+                                </div>
+                                <div>Opera</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="compatibility-good">
+                                    <i class="fas fa-check-circle"></i> Good
+                                </span>
+                            </td>
+                            <td>Good support as it's built on Chromium</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-user-shield"></i> Privacy Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Your Voice Data is Protected</h5>
+                            <ul>
+                                <li><strong>No recordings are stored</strong> on our servers</li>
+                                <li><strong>All processing happens locally</strong> in your browser</li>
+                                <li><strong>Only the text transcript</strong> is sent to our search system</li>
+                                <li><strong>Microphone access</strong> requires your explicit permission</li>
+                                <li><strong>Voice data is never used</strong> for advertising or user profiling</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Browser Permissions</h5>
+                                <p>The first time you use voice search, your browser will ask for permission to access your microphone. You can:</p>
+                                <ul>
+                                    <li>Allow access once</li>
+                                    <li>Allow access permanently</li>
+                                    <li>Deny access</li>
+                                </ul>
+                                <p>You can change these permissions at any time in your browser settings.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Try Voice Search Section -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Try Voice Search Now</h2>
+            <p class="lead">Experience the convenience of hands-free shopping</p>
+        </div>
+        
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <form id="demoVoiceSearchForm" class="text-center">
+                        <div class="input-group input-group-lg mb-3">
+                            <input type="text" id="demoVoiceInput" class="form-control" placeholder="Click the microphone icon to search with your voice">
+                            <div class="input-group-append">
+                                <button type="button" id="demoVoiceButton" class="btn btn-outline-primary">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button type="button" class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div id="voiceSearchResult" class="mt-4 text-center" style="display: none;">
+                        <div class="alert alert-success">
+                            <h5>Voice Recognition Result:</h5>
+                            <p id="demoTranscript"></p>
+                            <small class="text-muted">This is just a demonstration - no actual search will be performed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Get Started -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h2>Ready to Get Started?</h2>
+                    <p class="lead">Look for the microphone icon throughout our site to use voice search</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main') }}" class="btn btn-primary btn-lg mr-3">
+                            <i class="fas fa-search"></i> Try on Main Search
+                        </a>
+                        <a href="{{ url_for('nlp_search_route') }}" class="btn btn-success btn-lg mr-3">
+                            <i class="fas fa-comments"></i> Try with NLP Search
+                        </a>
+                        <a href="{{ url_for('multimodal_search_route') }}" class="btn btn-warning btn-lg mr-3">
+                            <i class="fas fa-camera"></i> Try with Multimodal Search
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const demoVoiceButton = document.getElementById('demoVoiceButton');
+    const demoVoiceInput = document.getElementById('demoVoiceInput');
+    const voiceSearchResult = document.getElementById('voiceSearchResult');
+    const demoTranscript = document.getElementById('demoTranscript');
+    
+    // Check if all elements exist
+    if (!demoVoiceButton || !demoVoiceInput || !voiceSearchResult || !demoTranscript) {
+        console.warn("One or more required demo elements not found");
+        return;
+    }
+    
+    // Check if speech recognition is supported
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        demoVoiceButton.disabled = true;
+        demoVoiceButton.title = 'Voice recognition is not supported in your browser';
+        
+        // Add an alert to inform the user
+        const alertElement = document.createElement('div');
+        alertElement.className = 'alert alert-warning mt-3';
+        alertElement.innerHTML = '<strong>Browser Not Supported:</strong> Voice recognition is not available in your current browser. Please try with Google Chrome or Microsoft Edge for the full experience.';
+        demoVoiceButton.parentNode.parentNode.parentNode.appendChild(alertElement);
+        
+        return;
+    }
+    
+    try {
+        // Initialize speech recognition
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        
+        let isListening = false;
+        
+        // Setup event handlers
+        recognition.onstart = function() {
+            isListening = true;
+            demoVoiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            demoVoiceButton.classList.add('btn-danger');
+            demoVoiceButton.classList.remove('btn-outline-primary');
+            demoVoiceInput.placeholder = 'Listening...';
+        };
+        
+        recognition.onresult = function(event) {
+            if (event.results && event.results.length > 0) {
+                const result = event.results[0];
+                if (result && result.length > 0) {
+                    const transcript = result[0].transcript;
+                    
+                    demoVoiceInput.value = transcript;
+                    
+                    if (result.isFinal) {
+                        demoTranscript.textContent = transcript;
+                        voiceSearchResult.style.display = 'block';
+                    }
+                }
+            }
+        };
+        
+        recognition.onend = function() {
+            isListening = false;
+            demoVoiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+            demoVoiceButton.classList.remove('btn-danger');
+            demoVoiceButton.classList.add('btn-outline-primary');
+            demoVoiceInput.placeholder = 'Click the microphone icon to search with your voice';
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            
+            // Show error message
+            demoVoiceInput.value = '';
+            demoVoiceInput.placeholder = 'Error: ' + (event.error === 'not-allowed' ? 'Microphone access denied' : event.error);
+            
+            // Reset button state
+            isListening = false;
+            demoVoiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+            demoVoiceButton.classList.remove('btn-danger');
+            demoVoiceButton.classList.add('btn-outline-primary');
+        };
+        
+        // Add click event to voice button
+        demoVoiceButton.addEventListener('click', function() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                // Reset the result display
+                voiceSearchResult.style.display = 'none';
+                demoVoiceInput.value = '';
+                
+                // Start recognition
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                    demoVoiceInput.placeholder = 'Error starting speech recognition';
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error setting up speech recognition:", error);
+        // Show a more friendly error to the user
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger mt-3';
+        errorAlert.innerHTML = '<strong>Error:</strong> Could not initialize speech recognition. This feature may not be supported in your browser.';
+        
+        if (demoVoiceButton && demoVoiceButton.parentNode && demoVoiceButton.parentNode.parentNode) {
+            demoVoiceButton.parentNode.parentNode.parentNode.appendChild(errorAlert);
+        }
+    }
+});
+</script>
+{% endblock %}

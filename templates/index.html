@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Ecommerce Recommendation System - Home{% endblock %}
+
+{% block additional_styles %}
+body {
+  background-color: #f8f9fa;
+}
+.video-background {
+  width: 100%;
+  height: 400px; /* Set the height of the video here */
+  object-fit: cover; /* Ensure the video covers the entire container */
+}
+.nav-link:hover {
+  color: orange !important; /* Change text color on hover */
+}
+.nav-link.btn {
+  border-radius: 5px; /* Add rounded corners to buttons */
+}
+.modal-content {
+  background-color: #fff; /* Set modal content background color */
+  color: #000; /* Set modal content text color */
+}
+.modal-content.dark {
+  background-color: #000; /* Set modal content background color for dark theme */
+  color: #fff; /* Set modal content text color for dark theme */
+}
+{% endblock %}
+
+{% block content %}
+<!-- Video -->
+<div
+  id="carouselExampleControls"
+  class="carousel slide"
+  data-ride="carousel"
+>
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <video class="video-background" autoplay loop muted>
+        <source src="static/v.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+</div>
+
+<!-- Add this right after the video carousel in index.html -->
+<!-- AI Assistant Feature Callout -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card bg-dark text-white">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-2 text-center mb-3 mb-md-0">
+              <i class="fas fa-robot fa-5x text-primary"></i>
+            </div>
+            <div class="col-md-7 mb-3 mb-md-0">
+              <h3 class="mb-2">NEW: AI Shopping Assistant</h3>
+              <p class="lead mb-0">
+                Get personalized recommendations and find exactly what you
+                need through natural conversation with our advanced AI
+                assistant.
+              </p>
+            </div>
+            <div class="col-md-3 text-center">
+              <a
+                href="{{ url_for('ai_assistant_page') }}"
+                class="btn btn-primary btn-lg"
+              >
+                <i class="fas fa-comments mr-2"></i> Chat Now
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Go To Main Page Button -->
+<div class="text-center mt-5">
+  <a href="{{ url_for('main') }}" class="btn btn-primary btn-lg">Go To Main Page</a>
+</div>
+
+{% if signup_message %}
+<h5 style="margin-left: 42%; margin-top: 10px; text: bold">
+  {{signup_message}}
+</h5>
+{% endif %}
+
+<!--trending recommendations-->
+<!-- Products -->
+<div class="container mt-5">
+  {% if personalized %}
+  <h2 class="text-center mb-2">Personalized Recommendations</h2>
+  <p class="text-center text-muted mb-4">
+    Based on your recent activity using our hybrid recommendation system
+  </p>
+  {% else %}
+  <h2 class="text-center mb-2">Trending Products</h2>
+  <p class="text-center text-muted mb-4">
+    Popular products based on ratings
+  </p>
+  {% endif %}
+
+  <div class="row mt-4">
+    {% for index, product in trending_products.iterrows() %}
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <div class="card h-100">
+        <a
+          href="{{ url_for('view_product', product_name=product['Name']) }}"
+        >
+          {% if personalized %}
+          <img
+            src="{{ product['ImageURL'] }}"
+            class="card-img-top"
+            alt="{{ product['Name'] }}"
+            style="height: 200px; object-fit: cover"
+          />
+          {% else %}
+          <img
+            src="{{ random_product_image_urls[index] }}"
+            class="card-img-top"
+            alt="{{ product['Name'] }}"
+            style="height: 200px; object-fit: cover"
+          />
+          {% endif %}
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">{{ truncate(product['Name'],12) }}</h5>
+          <p class="card-text">Brand: {{ product['Brand'] }}</p>
+          <p class="card-text">
+            <small class="text-muted"
+              >Rating: {{ product['Rating'] }} ★</small
+            >
+          </p>
+          <a
+            href="{{ url_for('view_product', product_name=product['Name']) }}"
+            class="btn btn-primary"
+            >View Details</a
+          >
+        </div>
+      </div>
+    </div>
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="productModal{{ index }}"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="productModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">
+              {{ product['Name'] }}
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4">
+                <img
+                  src="{{ random_product_image_urls[index] }}"
+                  class="img-fluid"
+                  alt="{{ product['Name'] }}"
+                  style="height: 200px"
+                />
+              </div>
+              <div class="col-md-8">
+                <p><strong>Brand:</strong> {{ product['Brand'] }}</p>
+                <!-- Add other product details here -->
+                <!-- Example: -->
+                <p>
+                  <strong>Review Count:</strong> {{ product['ReviewCount']
+                  }}
+                </p>
+                <p><strong>Rating:</strong> {{ product['Rating'] }}</p>
+                <p><strong>Price:</strong> {{ random_price }}</p>
+                <!-- Add more details as needed -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Any additional scripts specific to the index page can go here -->
+{% endblock %}

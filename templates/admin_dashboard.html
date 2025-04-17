@@ -1,0 +1,560 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+  <h1 class="mb-4">Admin Dashboard</h1>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-info">
+        <p><strong>Current Recommendation Weights:</strong></p>
+        <ul>
+          <li>
+            Content-Based: {{ "%.2f"|format(weights.content_based * 100) }}%
+          </li>
+          <li>
+            Collaborative: {{ "%.2f"|format(weights.collaborative * 100) }}%
+          </li>
+          <li>Neural: {{ "%.2f"|format(weights.neural * 100) }}%</li>
+        </ul>
+        <a href="{{ url_for('adjust_weights') }}" class="btn btn-primary btn-sm"
+          >Adjust Weights</a
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales and Order Analytics Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4>
+            <i class="fas fa-shopping-bag mr-2"></i>Sales and Order Analytics
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <!-- Sales Summary Cards -->
+            <div class="col-md-3">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Total Orders</h5>
+                  <h2>{{ orders|default([])|length }}</h2>
+                  <p class="mb-0">All-time orders</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Total Revenue</h5>
+                  <h2>${{ "%.2f"|format(total_revenue|default(0)) }}</h2>
+                  <p class="mb-0">Total sales amount</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Cart Conversion</h5>
+                  <h2>
+                    {{ "%.1f"|format(cart_conversion_rate|default(0) * 100) }}%
+                  </h2>
+                  <p class="mb-0">Add-to-cart to purchase</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Avg. Order Value</h5>
+                  <h2>${{ "%.2f"|format(avg_order_value|default(0)) }}</h2>
+                  <p class="mb-0">Per completed order</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ul class="nav nav-tabs" id="ordersTabs" role="tablist">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                id="recent-orders-tab"
+                data-toggle="tab"
+                href="#recent-orders"
+                role="tab"
+              >
+                Recent Orders
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="abandoned-carts-tab"
+                data-toggle="tab"
+                href="#abandoned-carts"
+                role="tab"
+              >
+                Abandoned Carts
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="popular-products-tab"
+                data-toggle="tab"
+                href="#popular-products"
+                role="tab"
+              >
+                Best Selling Products
+              </a>
+            </li>
+          </ul>
+
+          <div
+            class="tab-content p-3 border border-top-0"
+            id="ordersTabsContent"
+          >
+            <!-- Recent Orders Tab -->
+
+            <!-- Replace this in the Recent Orders tab section -->
+            <div
+              class="tab-pane fade show active"
+              id="recent-orders"
+              role="tabpanel"
+            >
+              <h5 class="mb-3">Recent Orders</h5>
+              {% if orders|default([])|length > 0 %}
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer</th>
+                      <th>Date</th>
+                      <th>Items</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for order in
+                    (orders|default([])|sort(attribute='order_date',
+                    reverse=True))[:10] %}
+                    <tr>
+                      <td>#{{ order.id }}</td>
+                      <td>User #{{ order.user_id }}</td>
+                      <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                      <td>{{ order.items|length }}</td>
+                      <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                      <td>
+                        {% if order.status == 'pending' %}
+                        <span class="badge badge-warning">Pending</span>
+                        {% elif order.status == 'paid' %}
+                        <span class="badge badge-info">Paid</span>
+                        {% elif order.status == 'shipped' %}
+                        <span class="badge badge-primary">Shipped</span>
+                        {% elif order.status == 'delivered' %}
+                        <span class="badge badge-success">Delivered</span>
+                        {% else %}
+                        <span class="badge badge-secondary"
+                          >{{ order.status|capitalize }}</span
+                        >
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a
+                          href="{{ url_for('view_order', order_id=order.id) }}"
+                          class="btn btn-sm btn-outline-primary"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-center">No orders available yet.</p>
+              {% endif %}
+            </div>
+
+            <!-- Abandoned Carts Tab -->
+            <div class="tab-pane fade" id="abandoned-carts" role="tabpanel">
+              <h5 class="mb-3">Abandoned Carts</h5>
+              {% if abandoned_carts|default([])|length > 0 %}
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>Items</th>
+                      <th>Total Value</th>
+                      <th>Abandoned Since</th>
+                      <th>Products</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for cart in abandoned_carts|default([]) %}
+                    <tr>
+                      <td>{{ cart.user_id }}</td>
+                      <td>{{ cart.items|length }}</td>
+                      <td>${{ "%.2f"|format(cart.total_value) }}</td>
+                      <td>
+                        {{ cart.last_updated.strftime('%Y-%m-%d %H:%M') }}
+                      </td>
+                      <td>
+                        <button
+                          class="btn btn-sm btn-outline-info"
+                          data-toggle="tooltip"
+                          title="{{ cart.products|join(', ') }}"
+                        >
+                          <i class="fas fa-list"></i> View Items
+                        </button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-center">No abandoned carts detected.</p>
+              {% endif %}
+            </div>
+
+            <!-- Best Selling Products Tab -->
+            <!-- Replace the entire Best Selling Products tab content -->
+            <div class="tab-pane fade" id="popular-products" role="tabpanel">
+              <h5 class="mb-3">Best Selling Products</h5>
+              {% if best_selling_products is defined and best_selling_products
+              %}
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Quantity Sold</th>
+                      <th>Revenue</th>
+                      <th>Average Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for product, stats in best_selling_products.items() %}
+                    <tr>
+                      <td>{{ product }}</td>
+                      <td>{{ stats.quantity }}</td>
+                      <td>${{ "%.2f"|format(stats.revenue) }}</td>
+                      <td>
+                        {% if stats.rating %}
+                        <div class="text-warning">
+                          {% for i in range(5) %} {% if i < stats.rating|int %}
+                          <i class="fas fa-star"></i>
+                          {% elif i < stats.rating %}
+                          <i class="fas fa-star-half-alt"></i>
+                          {% else %}
+                          <i class="far fa-star"></i>
+                          {% endif %} {% endfor %} {{
+                          "%.1f"|format(stats.rating) }}
+                        </div>
+                        {% else %}
+                        <span class="text-muted">No ratings</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-center">No sales data available yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <p class="mb-0">
+                <i class="fas fa-chart-line mr-2"></i> Sales Analytics Dashboard
+              </p>
+            </div>
+            <div class="col-md-6 text-right">
+              <button class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-download mr-1"></i> Export Sales Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recommendation Type Performance -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Recommendation Type Performance</h4>
+        </div>
+        <div class="card-body">
+          {% if avg_rating_by_type %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Recommendation Type</th>
+                  <th>Average Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for type, rating in avg_rating_by_type.items() %}
+                <tr>
+                  <td>{{ type }}</td>
+                  <td>{{ "%.2f"|format(rating) }} / 5.0</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-center">No feedback data available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Rating Distribution -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Rating Distribution</h4>
+        </div>
+        <div class="card-body">
+          {% if rating_counts %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Rating</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for rating in range(5, 0, -1) %}
+                <tr>
+                  <td>{{ rating }} Star{% if rating != 1 %}s{% endif %}</td>
+                  <td>{{ rating_counts.get(rating, 0) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-center">No rating data available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Activity Stats -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>User Activity</h4>
+        </div>
+        <div class="card-body">
+          {% if activity_counts %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Activity Type</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for activity, count in activity_counts.items() %}
+                <tr>
+                  <td>{{ activity|capitalize }}</td>
+                  <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-center">No activity data available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Products -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Top Products</h4>
+        </div>
+        <div class="card-body">
+          {% if top_products %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Activity Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product, count in top_products.items() %}
+                <tr>
+                  <td>{{ product }}</td>
+                  <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-center">No product data available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Feedback -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Recent Feedback</h4>
+        </div>
+        <div class="card-body">
+          {% if not recent_feedback.empty %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Product</th>
+                  <th>Recommendation Type</th>
+                  <th>Rating</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for _, row in recent_feedback.iterrows() %}
+                <tr>
+                  <td>{{ row.user_id }}</td>
+                  <td>{{ row.product_name }}</td>
+                  <td>{{ row.recommendation_type }}</td>
+                  <td>{{ row.rating }}</td>
+                  <td>{{ row.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-center">No feedback data available yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NLP Search Analytics -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>NLP Search Analytics</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="mb-3">Popular Search Queries</h5>
+              {% if activity_df is defined and not activity_df.empty %} {% set
+              nlp_searches = activity_df[activity_df.activity_type ==
+              'nlp_search'] %} {% if not nlp_searches.empty %}
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Query</th>
+                      <th>Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for query, count in
+                    nlp_searches.groupby('product_name').size().sort_values(ascending=False).head(10).items()
+                    %}
+                    <tr>
+                      <td>{{ query }}</td>
+                      <td>{{ count }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-center">No NLP searches yet</p>
+              {% endif %} {% else %}
+              <p class="text-center">No search data available</p>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <h5 class="mb-3">NLP Search Performance</h5>
+              {% if avg_rating_by_type is defined and 'NLP-Search' in
+              avg_rating_by_type %}
+              <div class="alert alert-info">
+                <strong>Average Rating for NLP Search:</strong>
+                {{ "%.2f"|format(avg_rating_by_type['NLP-Search']) }} / 5.0
+              </div>
+
+              <div class="progress" style="height: 30px">
+                <div
+                  class="progress-bar bg-success"
+                  style="width: {{ (avg_rating_by_type['NLP-Search'] / 5) * 100 }}%"
+                >
+                  {{ "%.2f"|format(avg_rating_by_type['NLP-Search']) }}
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <p><strong>Compared to other recommendation types:</strong></p>
+                <ul>
+                  {% for type, rating in avg_rating_by_type.items() %} {% if
+                  type != 'NLP-Search' %}
+                  <li>{{ type }}: {{ "%.2f"|format(rating) }}</li>
+                  {% endif %} {% endfor %}
+                </ul>
+              </div>
+              {% else %}
+              <p class="text-center">No NLP search ratings yet</p>
+
+              <div class="alert alert-warning">
+                <strong>Tip:</strong> Encourage users to provide feedback on NLP
+                search results to track performance.
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  $(function () {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+{% endblock %}

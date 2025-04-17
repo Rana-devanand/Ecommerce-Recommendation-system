@@ -1,0 +1,537 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('ab_testing_dashboard') }}">A/B Testing Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Test Details</li>
+                </ol>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">{{ test.name }}</h3>
+                        <div>
+                            {% if test.status == 'active' %}
+                                <span class="badge badge-success">Active</span>
+                            {% elif test.status == 'completed' %}
+                                <span class="badge badge-secondary">Completed</span>
+                            {% elif test.status == 'paused' %}
+                                <span class="badge badge-warning">Paused</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>Description</h5>
+                            <p>{{ test.description }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Test Period</h5>
+                            <p>
+                                <strong>Start:</strong> 
+                                {% if test.start_date is string %}
+                                    {{ test.start_date|parse_iso_datetime|format_datetime }}
+                                {% else %}
+                                    {{ test.start_date|format_datetime }}
+                                {% endif %}
+                                <br>
+                                <strong>End:</strong> 
+                                {% if test.end_date is string %}
+                                    {{ test.end_date|parse_iso_datetime|format_datetime }}
+                                {% else %}
+                                    {{ test.end_date|format_datetime }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mb-3">Variants</h4>
+                    <div class="row">
+                        {% for variant in test.variants %}
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 {% if variant.id == 'control' %}bg-light{% endif %}">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        {{ variant.name }}
+                                        {% if variant.id == 'control' %}
+                                            <span class="badge badge-secondary">Control</span>
+                                        {% endif %}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ variant.description }}</p>
+                                    
+                                    <h6>Weight Configuration</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Algorithm</th>
+                                                    <th>Weight</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Content-Based</td>
+                                                    <td>{{ "%.2f"|format(variant.weights.content_based * 100) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Collaborative</td>
+                                                    <td>{{ "%.2f"|format(variant.weights.collaborative * 100) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Neural</td>
+                                                    <td>{{ "%.2f"|format(variant.weights.neural * 100) }}%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="progress" style="height: 30px;">
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                             style="width: {{ variant.weights.content_based * 100 }}%;">
+                                            {{ "%.0f"|format(variant.weights.content_based * 100) }}%
+                                        </div>
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ variant.weights.collaborative * 100 }}%;">
+                                            {{ "%.0f"|format(variant.weights.collaborative * 100) }}%
+                                        </div>
+                                        <div class="progress-bar bg-danger" role="progressbar" 
+                                             style="width: {{ variant.weights.neural * 100 }}%;">
+                                            {{ "%.0f"|format(variant.weights.neural * 100) }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">Performance Results</h3>
+                </div>
+                <div class="card-body">
+                    {% if test.metrics %}
+                    <div class="row mb-4">
+                        <div class="col-lg-6">
+                            <canvas id="ratingChart" height="300"></canvas>
+                        </div>
+                        <div class="col-lg-6">
+                            <canvas id="ctrChart" height="300"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Variant</th>
+                                    <th>Impressions</th>
+                                    <th>Clicks</th>
+                                    <th>CTR</th>
+                                    <th>Purchases</th>
+                                    <th>Conversion Rate</th>
+                                    <th>Feedback Count</th>
+                                    <th>Avg. Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for variant_id, metrics in test.metrics.items() %}
+                                <tr>
+                                    {% set variant = test.variants|selectattr('id', 'equalto', variant_id)|first %}
+                                    <td>
+                                        <strong>{{ variant.name }}</strong>
+                                        {% if variant_id == 'control' %}
+                                            <span class="badge badge-secondary">Control</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ metrics.get('impressions', 0) }}</td>
+                                    <td>{{ metrics.get('clicks', 0) }}</td>
+                                    <td>
+                                        {% if metrics.get('ctr', 0) > 0 %}
+                                            {{ "%.2f"|format(metrics.get('ctr', 0) * 100) }}%
+                                        {% else %}
+                                            0.00%
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ metrics.get('purchases', 0) }}</td>
+                                    <td>
+                                        {% if metrics.get('conversion_rate', 0) > 0 %}
+                                            {{ "%.2f"|format(metrics.get('conversion_rate', 0) * 100) }}%
+                                        {% else %}
+                                            0.00%
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ metrics.get('feedback_count', 0) }}</td>
+                                    <td>
+                                        {% if metrics.get('avg_rating', 0) > 0 %}
+                                            {{ "%.2f"|format(metrics.get('avg_rating', 0)) }} / 5.0
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <p>No metrics data available yet. Check back once users have interacted with the test variants.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if report and report.get('significance') %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Statistical Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Statistical Significance</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Comparison</th>
+                                    <th>P-Value</th>
+                                    <th>Significant</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for comparison, results in report.get('significance', {}).items() %}
+                                <tr>
+                                    <td>{{ comparison|replace('_vs_', ' vs. ') }}</td>
+                                    <td>{{ "%.4f"|format(results.get('p_value', 0)) }}</td>
+                                    <td>
+                                        {% if results.get('significant', False) %}
+                                            <span class="badge badge-success">Yes</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.2f"|format(results.get('confidence', 0)) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4 class="mb-3 mt-4">Lift Analysis</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Variant</th>
+                                    <th>Avg. Rating Lift</th>
+                                    <th>CTR Lift</th>
+                                    <th>Conversion Rate Lift</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for variant_id, lift in report.get('lift', {}).items() %}
+                                <tr>
+                                    {% set variant = test.variants|selectattr('id', 'equalto', variant_id)|first %}
+                                    <td><strong>{{ variant.name }}</strong></td>
+                                    <td class="{{ 'text-success' if lift.get('avg_rating', 0) > 0 else 'text-danger' }}">
+                                        {% if lift.get('avg_rating') is not none %}
+                                            {{ "%.2f"|format(lift.get('avg_rating', 0)) }}%
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="{{ 'text-success' if lift.get('ctr', 0) > 0 else 'text-danger' }}">
+                                        {% if lift.get('ctr') is not none %}
+                                            {{ "%.2f"|format(lift.get('ctr', 0)) }}%
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="{{ 'text-success' if lift.get('conversion_rate', 0) > 0 else 'text-danger' }}">
+                                        {% if lift.get('conversion_rate') is not none %}
+                                            {{ "%.2f"|format(lift.get('conversion_rate', 0)) }}%
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="btn-group">
+                <a href="{{ url_for('ab_testing_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                
+                {% if test.status == 'active' %}
+                    <button class="btn btn-warning" onclick="updateTestStatus('{{ test.test_id }}', 'paused')">
+                        <i class="fas fa-pause"></i> Pause Test
+                    </button>
+                {% elif test.status == 'paused' %}
+                    <button class="btn btn-success" onclick="updateTestStatus('{{ test.test_id }}', 'active')">
+                        <i class="fas fa-play"></i> Resume Test
+                    </button>
+                {% endif %}
+                
+                <button class="btn btn-danger" onclick="confirmDeleteTest('{{ test.test_id }}')">
+                    <i class="fas fa-trash"></i> Delete Test
+                </button>
+                
+                <button class="btn btn-primary" onclick="applyBestVariant('{{ test.test_id }}')">
+                    <i class="fas fa-check"></i> Apply Best Variant
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this test? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Best Variant Modal -->
+<div class="modal fade" id="applyBestModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply Best Variant</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="applyBestForm">
+                <div class="modal-body">
+                    <p>This will apply the weights from the best-performing variant as the default weights for all users.</p>
+                    
+                    <div class="form-group">
+                        <label for="primaryMetric">Primary Metric</label>
+                        <select class="form-control" id="primaryMetric" name="primary_metric">
+                            <option value="avg_rating">Average Rating</option>
+                            <option value="ctr">Click-Through Rate</option>
+                            <option value="conversion_rate">Conversion Rate</option>
+                        </select>
+                        <small class="form-text text-muted">Select the metric to use for determining the best variant</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Best Variant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create charts if metrics exist
+        {% if test.metrics %}
+            // Prepare data for charts
+            const variantLabels = [];
+            const avgRatings = [];
+            const ctrValues = [];
+            const conversionRates = [];
+            
+            {% for variant_id, metrics in test.metrics.items() %}
+                {% set variant = test.variants|selectattr('id', 'equalto', variant_id)|first %}
+                variantLabels.push('{{ variant.name }}');
+                avgRatings.push({{ metrics.get('avg_rating', 0) }});
+                ctrValues.push({{ metrics.get('ctr', 0) * 100 }});
+                conversionRates.push({{ metrics.get('conversion_rate', 0) * 100 }});
+            {% endfor %}
+            
+            // Create Average Rating Chart
+            const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+            new Chart(ratingCtx, {
+                type: 'bar',
+                data: {
+                    labels: variantLabels,
+                    datasets: [{
+                        label: 'Average Rating (out of 5)',
+                        data: avgRatings,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Average Rating by Variant'
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                max: 5
+                            }
+                        }]
+                    }
+                }
+            });
+            
+            // Create CTR Chart
+            const ctrCtx = document.getElementById('ctrChart').getContext('2d');
+            new Chart(ctrCtx, {
+                type: 'bar',
+                data: {
+                    labels: variantLabels,
+                    datasets: [{
+                        label: 'Click-Through Rate (%)',
+                        data: ctrValues,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Click-Through Rate by Variant'
+                    },
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }]
+                    }
+                }
+            });
+        {% endif %}
+    });
+    
+    // Handle test deletion
+    let testIdToDelete = '{{ test.test_id }}';
+    
+    function confirmDeleteTest(testId) {
+        $('#deleteConfirmModal').modal('show');
+    }
+    
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        fetch(`{{ url_for('delete_ab_test', test_id='') }}${testIdToDelete}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#deleteConfirmModal').modal('hide');
+                window.location.href = "{{ url_for('ab_testing_dashboard') }}";
+            } else {
+                alert('Error deleting test: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the test.');
+        });
+    });
+    
+    // Handle test status update
+    function updateTestStatus(testId, status) {
+        const formData = new FormData();
+        formData.append('status', status);
+        
+        fetch(`{{ url_for('update_ab_test', test_id='') }}${testId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error updating test status: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the test status.');
+        });
+    }
+    
+    // Handle applying best variant
+    function applyBestVariant(testId) {
+        $('#applyBestModal').modal('show');
+    }
+    
+    document.getElementById('applyBestForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch(`{{ url_for('apply_best_variant', test_id='') }}${testIdToDelete}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#applyBestModal').modal('hide');
+                alert('Successfully applied the best variant weights!');
+                window.location.reload();
+            } else {
+                alert('Error applying best variant: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while applying the best variant.');
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.Name }} - Ecommerce Recommendation System{% endblock %}
+
+{% block additional_styles %}
+.product-image {
+    max-height: 400px;
+    object-fit: contain;
+}
+.product-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+.product-rating {
+    color: #ffc107;
+}
+.product-attributes {
+    margin-top: 20px;
+}
+.product-quantity {
+    display: flex;
+    align-items: center;
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+.product-quantity button {
+    border: none;
+    background: #f8f9fa;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+.product-quantity input {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    margin: 0 5px;
+}
+.product-actions {
+    margin-top: 20px;
+}
+.product-description {
+    white-space: pre-line;
+}
+.social-share {
+    margin-top: 20px;
+}
+.social-share a {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 1.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ product.ImageURL }}" class="img-fluid product-image" alt="{{ product.Name }}">
+        </div>
+        <div class="col-md-6">
+            <h1>{{ product.Name }}</h1>
+            
+            <div class="product-attributes">
+                <p><strong>Brand:</strong> {{ product.Brand }}</p>
+                <div class="product-rating mb-2">
+                    <span>
+                        {% for i in range(5) %}
+                            {% if i < product.Rating|int %}
+                                <i class="fas fa-star"></i>
+                            {% elif i < product.Rating %}
+                                <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span class="text-muted ml-2">{{ product.Rating }} ({{ product.ReviewCount }} reviews)</span>
+                    </span>
+                </div>
+                <p class="product-price">${{ price }}</p>
+                
+                {% if product.Tags %}
+                    <p><strong>Categories:</strong>
+                        {% for tag in product.Tags.split(", ") %}
+                            <span class="badge badge-secondary">{{ tag }}</span>
+                        {% endfor %}
+                    </p>
+                {% endif %}
+            </div>
+            
+            <form action="{{ url_for('add_to_cart', product_name=product.Name, redirect_to='product') }}" method="post" class="mt-4">
+                <div class="product-quantity">
+                    <button type="button" class="decrease-quantity">-</button>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="10">
+                    <button type="button" class="increase-quantity">+</button>
+                </div>
+                
+                <div class="product-actions">
+                    <button type="submit" class="btn btn-primary btn-lg mr-2">
+                        <i class="fas fa-shopping-cart mr-2"></i>Add to Cart
+                    </button>
+                    
+                    {% if 'user_id' in session %}
+                        <button type="button" class="btn btn-outline-secondary btn-lg" id="wishlistBtn">
+                            <i class="far fa-heart mr-2"></i>Add to Wishlist
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <div class="mt-4">
+                <h4>Product Description</h4>
+                <p class="product-description">{{ product.Description }}</p>
+            </div>
+            
+            <div class="social-share">
+                <h5>Share this product:</h5>
+                <a href="#" class="text-primary"><i class="fab fa-facebook-square"></i></a>
+                <a href="#" class="text-info"><i class="fab fa-twitter-square"></i></a>
+                <a href="#" class="text-danger"><i class="fab fa-pinterest-square"></i></a>
+                <a href="#" class="text-success"><i class="fab fa-whatsapp-square"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab">Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="reviews-tab" data-toggle="tab" href="#reviews" role="tab">Reviews</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="shipping-tab" data-toggle="tab" href="#shipping" role="tab">Shipping</a>
+                </li>
+            </ul>
+            <div class="tab-content p-3 border border-top-0 rounded-bottom" id="productTabsContent">
+                <div class="tab-pane fade show active" id="details" role="tabpanel">
+                    <h5>Product Specifications</h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th scope="row" width="30%">Brand</th>
+                                <td>{{ product.Brand }}</td>
+                            </tr>
+                            {% if product.Tags %}
+                                <tr>
+                                    <th scope="row">Categories</th>
+                                    <td>{{ product.Tags }}</td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <th scope="row">Rating</th>
+                                <td>{{ product.Rating }} out of 5</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Review Count</th>
+                                <td>{{ product.ReviewCount }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <h5>Customer Reviews</h5>
+                    <div class="mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                <div style="font-size: 4rem; color: #ffc107;">{{ product.Rating }}</div>
+                                <div class="product-rating">
+                                    {% for i in range(5) %}
+                                        {% if i < product.Rating|int %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif i < product.Rating %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div>{{ product.ReviewCount }} reviews</div>
+                            </div>
+                            <div class="col-md-10">
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-success" style="width: 60%">5 ★ (60%)</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-success" style="width: 25%">4 ★ (25%)</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-warning" style="width: 10%">3 ★ (10%)</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-danger" style="width: 4%">2 ★ (4%)</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-danger" style="width: 1%">1 ★ (1%)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if 'user_id' in session %}
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Write a Review</h5>
+                                <form>
+                                    <div class="form-group">
+                                        <label>Rating</label>
+                                        <div class="rating">
+                                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                <label class="btn btn-outline-warning">
+                                                    <input type="radio" name="rating" value="1"> 1 ★
+                                                </label>
+                                                <label class="btn btn-outline-warning">
+                                                    <input type="radio" name="rating" value="2"> 2 ★
+                                                </label>
+                                                <label class="btn btn-outline-warning">
+                                                    <input type="radio" name="rating" value="3"> 3 ★
+                                                </label>
+                                                <label class="btn btn-outline-warning">
+                                                    <input type="radio" name="rating" value="4"> 4 ★
+                                                </label>
+                                                <label class="btn btn-outline-warning active">
+                                                    <input type="radio" name="rating" value="5" checked> 5 ★
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="reviewTitle">Review Title</label>
+                                        <input type="text" class="form-control" id="reviewTitle" placeholder="Summarize your experience">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="reviewContent">Review Content</label>
+                                        <textarea class="form-control" id="reviewContent" rows="3" placeholder="Tell others about your experience with this product"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Sample reviews -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">Great product, highly recommend!</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted">By John D. on March 5, 2025</h6>
+                            <p class="card-text">This product exceeded my expectations! The quality is amazing and it works perfectly. I would definitely buy again and recommend to friends.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">Good but could be better</h5>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted">By Sarah M. on February 18, 2025</h6>
+                            <p class="card-text">Overall a good product. It does what it's supposed to do. I'm taking off one star because the shipping took longer than expected. Otherwise, very satisfied with my purchase.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="shipping" role="tabpanel">
+                    <h5>Shipping & Returns</h5>
+                    <p>We offer the following shipping options:</p>
+                    <ul>
+                        <li><strong>Standard Shipping:</strong> 3-5 business days (Free on orders over $50, otherwise $5.99)</li>
+                        <li><strong>Express Shipping:</strong> 2-3 business days ($9.99)</li>
+                        <li><strong>Overnight Shipping:</strong> Next business day if ordered before 2pm EST ($19.99)</li>
+                    </ul>
+                    
+                    <h5 class="mt-4">Return Policy</h5>
+                    <p>We accept returns within 30 days of purchase. Items must be in original condition with tags attached. Refunds will be issued to the original payment method.</p>
+                    <p>To initiate a return, please contact our customer service team at support@example.com.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5 mb-5">
+        <div class="col-12">
+            <h3>You Might Also Like</h3>
+            <div class="row mt-3">
+                {% for i in range(4) %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <img src="{{ url_for('static', filename=random_product_image_urls[i]) }}" class="card-img-top" alt="Product Image" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">Similar Product {{ i+1 }}</h5>
+                                <p class="card-text"><strong>${{ (price|float * 0.8)|round(2, 'common') }}</strong></p>
+                                <a href="#" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Quantity controls
+        const decreaseBtn = document.querySelector('.decrease-quantity');
+        const increaseBtn = document.querySelector('.increase-quantity');
+        const quantityInput = document.getElementById('quantity');
+        
+        decreaseBtn.addEventListener('click', function() {
+            const currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+        
+        increaseBtn.addEventListener('click', function() {
+            const currentValue = parseInt(quantityInput.value);
+            if (currentValue < 10) {
+                quantityInput.value = currentValue + 1;
+            }
+        });
+        
+        // Wishlist button toggle
+        const wishlistBtn = document.getElementById('wishlistBtn');
+        if (wishlistBtn) {
+            wishlistBtn.addEventListener('click', function() {
+                const icon = wishlistBtn.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    wishlistBtn.classList.add('btn-danger');
+                    wishlistBtn.classList.remove('btn-outline-secondary');
+                    alert('Product added to your wishlist!');
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    wishlistBtn.classList.remove('btn-danger');
+                    wishlistBtn.classList.add('btn-outline-secondary');
+                    alert('Product removed from your wishlist!');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

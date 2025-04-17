@@ -1,0 +1,854 @@
+{% extends 'base.html' %}
+{% block title %}AI Shopping Assistant{% endblock %}
+
+{% block additional_styles %}
+.chat-container {
+    height: 500px;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: #f8f9fa;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background-color: white;
+    border-top: 1px solid #e1e1e1;
+}
+
+.chat-input input {
+    flex-grow: 1;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    padding: 10px 15px;
+    margin-right: 10px;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+}
+
+.message-user {
+    margin-left: auto;
+    background-color: #007bff;
+    color: white;
+    border-radius: 18px 18px 0 18px;
+    padding: 10px 15px;
+}
+
+.message-assistant {
+    margin-right: auto;
+    background-color: #e9ecef;
+    color: #212529;
+    border-radius: 18px 18px 18px 0;
+    padding: 10px 15px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.typing-indicator {
+    display: inline-block;
+    width: 50px;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    margin: 0 2px;
+    animation: typing-animation 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing-animation {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+.product-carousel {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 15px 5px;
+    margin: 10px 0;
+    scrollbar-width: thin;
+}
+
+.product-carousel::-webkit-scrollbar {
+    height: 8px;
+}
+
+.product-carousel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.product-carousel::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.product-carousel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.product-card {
+    display: inline-block;
+    width: 220px;
+    margin-right: 15px;
+    white-space: normal;
+    vertical-align: top;
+    transition: transform 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card img {
+    height: 150px;
+    object-fit: cover;
+}
+
+.suggestions-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px 0;
+    margin-bottom: 15px;
+    scrollbar-width: none;
+}
+
+.suggestions-container::-webkit-scrollbar {
+    display: none;
+}
+
+.suggestion-chip {
+    display: inline-block;
+    padding: 8px 15px;
+    margin-right: 10px;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.suggestion-chip:hover {
+    background-color: #dee2e6;
+}
+
+.welcome-bubble {
+    background-color: #e9ecef;
+    border-radius: 18px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.welcome-bubble h5 {
+    margin-bottom: 10px;
+}
+
+.welcome-icon {
+    font-size: 2.5rem;
+    color: #6610f2;
+    margin-bottom: 15px;
+}
+
+.assistant-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.8rem;
+    color: #28a745;
+}
+
+.assistant-status .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #28a745;
+    margin-right: 5px;
+}
+
+/* Image upload styles */
+.image-upload-container {
+    margin: 10px 0;
+    text-align: center;
+}
+
+.image-upload-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 0 10px;
+    border: 1px dashed #ced4da;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.image-upload-btn:hover {
+    background-color: #e9ecef;
+}
+
+.image-upload-btn i {
+    margin-right: 5px;
+}
+
+.uploaded-image-preview {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    margin: 10px auto;
+    display: none;
+}
+
+.image-actions {
+    margin-top: 10px;
+    display: none;
+}
+
+.chat-tool-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e1e1e1;
+}
+
+.chat-tool-buttons button {
+    border: none;
+    background: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.chat-tool-buttons button:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.image-upload-section {
+    display: none;
+    padding: 15px;
+    border-top: 1px solid #e1e1e1;
+    background-color: #f8f9fa;
+}
+
+.image-upload-active .image-upload-section {
+    display: block;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white position-relative">
+                    <h3><i class="fas fa-robot mr-2"></i> AI Shopping Assistant</h3>
+                    <div class="assistant-status">
+                        <span class="status-dot"></span> Online
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="chat-container" id="chatContainer">
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Welcome message -->
+                            <div class="welcome-bubble">
+                                <div class="text-center">
+                                    <div class="welcome-icon">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <h5>Hello, I'm your AI Shopping Assistant!</h5>
+                                    <p>I can help you find products, provide recommendations, answer questions about items, and more.</p>
+                                    <p>Just tell me what you're looking for or try one of the suggestions below.</p>
+                                    <p><strong>New!</strong> You can now upload an image to search for similar products.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Messages will be added here dynamically -->
+                        </div>
+                        
+                        <!-- Suggestions chips -->
+                        <div class="suggestions-container" id="suggestionChips">
+                            <div class="suggestion-chip">Show me new arrivals</div>
+                            <div class="suggestion-chip">What's trending today?</div>
+                            <div class="suggestion-chip">Help me find a gift</div>
+                            <div class="suggestion-chip">Show me popular products</div>
+                            <div class="suggestion-chip">What's on sale?</div>
+                        </div>
+                        
+                        <!-- Image upload section -->
+                        <div class="image-upload-section" id="imageUploadSection">
+                            <div class="image-upload-container">
+                                <label for="imageInput" class="image-upload-btn">
+                                    <i class="fas fa-image"></i> Select Image
+                                </label>
+                                <input type="file" id="imageInput" style="display: none;" accept="image/*">
+                                <span class="text-muted" id="selectedFileName"></span>
+                            </div>
+                            <div class="text-center">
+                                <img src="" id="uploadedImagePreview" class="uploaded-image-preview">
+                                <div class="image-actions" id="imageActions">
+                                    <button class="btn btn-sm btn-secondary mr-2" id="cancelImageBtn">Cancel</button>
+                                    <button class="btn btn-sm btn-primary" id="searchWithImageBtn">Search with this image</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tool buttons section -->
+                        <div class="chat-tool-buttons">
+                            <button id="toggleImageUploadBtn" title="Upload Image">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <button id="clearChatBtn" title="Clear Chat">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="chat-input">
+                            <input type="text" id="chatInput" placeholder="Ask about products or get recommendations..." class="form-control">
+                            <button class="btn btn-primary rounded-circle" id="sendButton">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> Your assistant learns from your interactions to provide better recommendations over time.
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <a href="{{ url_for('ai_assistant_visualization') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-lightbulb mr-1"></i> How it works
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-lightbulb mr-2"></i> How Your Shopping Assistant Works</h5>
+                    <a href="{{ url_for('ai_assistant_visualization') }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i> See detailed visualization
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-comments text-primary" style="font-size: 2rem;"></i>
+                            </div>
+                            <h6>Natural Conversations</h6>
+                            <p class="small text-muted">Chat with your assistant using everyday language about what you're looking for</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-camera text-success" style="font-size: 2rem;"></i>
+                            </div>
+                            <h6>Visual Search</h6>
+                            <p class="small text-muted">Upload images of products you like to find similar items</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-brain text-info" style="font-size: 2rem;"></i>
+                            </div>
+                            <h6>AI-Powered Understanding</h6>
+                            <p class="small text-muted">Advanced machine learning understands your preferences and needs</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="mb-3">
+                                <i class="fas fa-user-check text-warning" style="font-size: 2rem;"></i>
+                            </div>
+                            <h6>Personalized Results</h6>
+                            <p class="small text-muted">Gets smarter with each interaction to deliver tailored recommendations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendButton = document.getElementById('sendButton');
+    const suggestionChips = document.getElementById('suggestionChips');
+    const toggleImageUploadBtn = document.getElementById('toggleImageUploadBtn');
+    const chatContainer = document.getElementById('chatContainer');
+    const imageUploadSection = document.getElementById('imageUploadSection');
+    const imageInput = document.getElementById('imageInput');
+    const uploadedImagePreview = document.getElementById('uploadedImagePreview');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const imageActions = document.getElementById('imageActions');
+    const cancelImageBtn = document.getElementById('cancelImageBtn');
+    const searchWithImageBtn = document.getElementById('searchWithImageBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
+    
+    let currentImage = null;
+    
+    // Load suggestions from API
+    loadSuggestions();
+    
+    // Function to add a message to the chat
+    function addMessage(text, sender, timestamp = new Date()) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender === 'user' ? 'message-user' : 'message-assistant');
+        messageDiv.innerText = text;
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.classList.add('message-time');
+        timeDiv.innerText = formatTime(timestamp);
+        
+        const messageContainer = document.createElement('div');
+        messageContainer.appendChild(messageDiv);
+        messageContainer.appendChild(timeDiv);
+        
+        chatMessages.appendChild(messageContainer);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Function to add an image message to the chat
+    function addImageMessage(imageDataUrl, sender, timestamp = new Date()) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender === 'user' ? 'message-user' : 'message-assistant');
+        
+        const imageElement = document.createElement('img');
+        imageElement.src = imageDataUrl;
+        imageElement.style.maxWidth = '100%';
+        imageElement.style.maxHeight = '200px';
+        imageElement.style.borderRadius = '8px';
+        
+        messageDiv.appendChild(imageElement);
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.classList.add('message-time');
+        timeDiv.innerText = formatTime(timestamp);
+        
+        const messageContainer = document.createElement('div');
+        messageContainer.appendChild(messageDiv);
+        messageContainer.appendChild(timeDiv);
+        
+        chatMessages.appendChild(messageContainer);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Format time for messages
+    function formatTime(date) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // Show typing indicator
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.classList.add('message', 'message-assistant', 'typing-message');
+        typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return typingDiv;
+    }
+    
+    // Remove typing indicator
+    function removeTypingIndicator() {
+        const typingIndicator = document.querySelector('.typing-message');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+    
+    // Add product carousel
+    function addProductCarouselFixed(products) {
+        if (!products || products.length === 0) return;
+        
+        const carouselDiv = document.createElement('div');
+        carouselDiv.classList.add('product-carousel');
+        
+        products.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.classList.add('card', 'product-card');
+            
+            // Use pre-encoded URL if available, otherwise encode it ourselves
+            const productUrl = product.ProductURL || `/view_product/${encodeURIComponent(product.Name)}`;
+            
+            // Create product card content
+            productCard.innerHTML = `
+                <a href="${productUrl}">
+                    <img src="${product.ImageURL}" class="card-img-top" alt="${product.Name}">
+                </a>
+                <div class="card-body p-2">
+                    <h6 class="card-title" style="font-size: 0.9rem; height: 40px; overflow: hidden;">${product.Name}</h6>
+                    <p class="card-text mb-1"><small>Brand: ${product.Brand}</small></p>
+                    <p class="card-text mb-1"><small>Rating: ${product.Rating} ★</small></p>
+                    <a href="${productUrl}" class="btn btn-sm btn-primary">View Details</a>
+                </div>
+            `;
+            
+            carouselDiv.appendChild(productCard);
+        });
+        
+        chatMessages.appendChild(carouselDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Send message to the backend
+    function sendMessage(message, imageData = null) {
+        // Add user message to chat
+        addMessage(message, 'user');
+        
+        // Add image to chat if provided
+        if (imageData) {
+            addImageMessage(imageData, 'user');
+        }
+        
+        // Clear input
+        chatInput.value = '';
+        
+        // Hide image upload section and reset
+        resetImageUpload();
+        
+        // Show typing indicator
+        const typingIndicator = showTypingIndicator();
+        
+        // Prepare data for sending
+        const requestData = {
+            message: message
+        };
+        
+        // If there's an image, prepare for image search
+        if (imageData) {
+            handleImageSearch(imageData, message);
+            return;
+        }
+        
+        // Send message to backend
+        fetch('/api/ai_assistant/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove typing indicator
+            removeTypingIndicator();
+            
+            if (data.success) {
+                // Add assistant response
+                addMessage(data.response.text, 'assistant');
+                
+                // Add product carousel if products are returned
+                if (data.response.products && data.response.products.length > 0) {
+                    addProductCarousel(data.response.products);
+                }
+                
+                // Update suggestions based on the interaction
+                loadSuggestions();
+            } else {
+                // Add error message
+                addMessage("I'm sorry, I had a problem processing your request. Could you try again?", 'assistant');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            removeTypingIndicator();
+            addMessage("I'm sorry, there was an error connecting to the server. Please try again later.", 'assistant');
+        });
+    }
+    
+    // Handle image search
+    function handleImageSearch(imageData, searchQuery) {
+        // Convert base64 data to blob
+        const base64Data = imageData.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+            const slice = byteCharacters.slice(offset, offset + 1024);
+            
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+        
+        const blob = new Blob(byteArrays, {type: 'image/jpeg'});
+        
+        // Create form data for the image upload
+        const formData = new FormData();
+        formData.append('image_file', blob, 'image.jpg');
+        
+        // Add text query if provided
+        if (searchQuery && searchQuery.trim() !== '') {
+            formData.append('text_query', searchQuery);
+        }
+        
+        // Determine which endpoint to use based on whether there's a text query
+        let endpoint = '/image_search';
+        
+        if (searchQuery && searchQuery.trim() !== '') {
+            endpoint = '/multimodal_search_route';
+            // Add default weights if using multimodal search
+            formData.append('image_weight', '50');
+        }
+        
+        // Show typing indicator
+        const typingIndicator = showTypingIndicator();
+        
+        // Send request to appropriate endpoint
+        fetch(endpoint, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Remove typing indicator
+            removeTypingIndicator();
+            
+            // Parse HTML response to extract products
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Extract products from the search results
+            const productCards = doc.querySelectorAll('.card');
+            
+            if (productCards.length > 0) {
+                // Create products array from HTML
+                const products = [];
+                
+                productCards.forEach(card => {
+                    const nameElement = card.querySelector('.card-title');
+                    const brandElement = card.querySelector('.card-text');
+                    const ratingElement = card.querySelectorAll('.card-text')[1];
+                    const imageElement = card.querySelector('img');
+                    // Get the correct URL from the view details link
+                    const viewDetailsLink = card.querySelector('a[href^="/view_product/"]');
+                    
+                    if (nameElement && imageElement) {
+                        let productName = nameElement.textContent.trim();
+                        // Extract the correctly encoded product name from the URL if possible
+                        let productUrl = '';
+                        if (viewDetailsLink) {
+                            productUrl = viewDetailsLink.getAttribute('href');
+                            // The URL is already properly encoded
+                        } else {
+                            // Fallback: Just encode the name ourselves
+                            productUrl = `/view_product/${encodeURIComponent(productName)}`;
+                        }
+                        
+                        const product = {
+                            Name: productName,
+                            Brand: brandElement ? brandElement.textContent.replace('Brand:', '').trim() : 'Unknown',
+                            Rating: ratingElement ? parseFloat(ratingElement.textContent.replace('Rating:', '').replace('★', '').trim()) : 0,
+                            ImageURL: imageElement.src,
+                            // Store the properly encoded URL
+                            ProductURL: productUrl
+                        };
+                        
+                        products.push(product);
+                    }
+                });
+                
+                // Generate response message
+                let responseText = "Here are some products that match your image";
+                if (searchQuery && searchQuery.trim() !== '') {
+                    responseText += ` and your search for "${searchQuery}"`;
+                }
+                responseText += ":";
+                
+                // Add assistant response
+                addMessage(responseText, 'assistant');
+                
+                // Add product carousel with FIXED URL generation
+                addProductCarouselFixed(products);
+            } else {
+                // No products found
+                addMessage("I couldn't find any products that match your image. Could you try a different image or search term?", 'assistant');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            removeTypingIndicator();
+            addMessage("I'm sorry, there was an error processing your image. Please try again later.", 'assistant');
+        });
+    }
+    
+    // Load personalized suggestions
+    function loadSuggestions() {
+        fetch('/api/ai_assistant/suggestions')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.suggestions && data.suggestions.length > 0) {
+                    // Clear existing suggestions
+                    suggestionChips.innerHTML = '';
+                    
+                    // Add new suggestions
+                    data.suggestions.forEach(suggestion => {
+                        const chipDiv = document.createElement('div');
+                        chipDiv.classList.add('suggestion-chip');
+                        chipDiv.innerText = suggestion;
+                        chipDiv.addEventListener('click', function() {
+                            sendMessage(suggestion);
+                        });
+                        suggestionChips.appendChild(chipDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading suggestions:', error);
+            });
+    }
+    
+    // Toggle image upload section
+    toggleImageUploadBtn.addEventListener('click', function() {
+        chatContainer.classList.toggle('image-upload-active');
+        
+        if (chatContainer.classList.contains('image-upload-active')) {
+            toggleImageUploadBtn.innerHTML = '<i class="fas fa-times"></i>';
+            toggleImageUploadBtn.title = "Close Image Upload";
+        } else {
+            toggleImageUploadBtn.innerHTML = '<i class="fas fa-camera"></i>';
+            toggleImageUploadBtn.title = "Upload Image";
+            resetImageUpload();
+        }
+    });
+    
+    // Handle image file selection
+    imageInput.addEventListener('change', function(e) {
+        if (!e.target.files.length) return;
+        
+        const file = e.target.files[0];
+        selectedFileName.textContent = file.name;
+        
+        // Read and preview the image
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            uploadedImagePreview.src = event.target.result;
+            uploadedImagePreview.style.display = 'block';
+            imageActions.style.display = 'block';
+            currentImage = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    // Cancel image upload
+    cancelImageBtn.addEventListener('click', function() {
+        resetImageUpload();
+    });
+    
+    // Search with selected image
+    searchWithImageBtn.addEventListener('click', function() {
+        if (!currentImage) return;
+        
+        const message = "Find products like this image";
+        chatInput.value = '';
+        
+        sendMessage(message, currentImage);
+    });
+    
+    // Reset image upload section
+    function resetImageUpload() {
+        imageInput.value = '';
+        uploadedImagePreview.src = '';
+        uploadedImagePreview.style.display = 'none';
+        selectedFileName.textContent = '';
+        imageActions.style.display = 'none';
+        currentImage = null;
+        
+        chatContainer.classList.remove('image-upload-active');
+        toggleImageUploadBtn.innerHTML = '<i class="fas fa-camera"></i>';
+        toggleImageUploadBtn.title = "Upload Image";
+    }
+    
+    // Clear chat history
+    clearChatBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear the chat history?')) {
+            // Keep welcome message, remove all other messages
+            const welcomeBubble = document.querySelector('.welcome-bubble');
+            chatMessages.innerHTML = '';
+            if (welcomeBubble) {
+                chatMessages.appendChild(welcomeBubble);
+            }
+        }
+    });
+    
+    // Handle send button click
+    sendButton.addEventListener('click', function() {
+        const message = chatInput.value.trim();
+        if (message) {
+            sendMessage(message, currentImage);
+        } else if (currentImage) {
+            // If there's an image but no text, use default message
+            sendMessage("Find products like this image", currentImage);
+        }
+    });
+    
+    // Handle Enter key press
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const message = chatInput.value.trim();
+            if (message) {
+                sendMessage(message, currentImage);
+            } else if (currentImage) {
+                // If there's an image but no text, use default message
+                sendMessage("Find products like this image", currentImage);
+            }
+        }
+    });
+    
+    // Handle suggestion chips
+    suggestionChips.querySelectorAll('.suggestion-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            sendMessage(this.innerText);
+        });
+    });
+});
+</script>
+{% endblock %}

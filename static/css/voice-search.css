@@ -1,0 +1,142 @@
+/* 
+ * Voice Search Styles
+ * These styles define the appearance of voice search elements
+ */
+
+ .voice-search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6c757d;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-search-button:hover {
+    color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.voice-search-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.voice-search-button.listening {
+    color: #dc3545;
+    animation: pulse 1.5s infinite;
+}
+
+.voice-search-button.listening:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.voice-search-button.error {
+    color: #dc3545;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.voice-recognition-status {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 20px;
+    z-index: 1000;
+    font-size: 14px;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 80%;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.voice-recognition-status.error {
+    background-color: rgba(220, 53, 69, 0.9);
+}
+
+.voice-recognition-status.info {
+    background-color: rgba(0, 123, 255, 0.9);
+}
+
+.voice-recognition-status.success {
+    background-color: rgba(40, 167, 69, 0.9);
+}
+
+/* Wave animation for listening indicator */
+.voice-wave {
+    display: inline-block;
+    position: relative;
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+}
+
+.voice-wave .wave {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    border: 2px solid #dc3545;
+    opacity: 0;
+}
+
+.listening .voice-wave .wave:nth-child(1) {
+    animation: wave 2s infinite;
+}
+
+.listening .voice-wave .wave:nth-child(2) {
+    animation: wave 2s infinite 0.3s;
+}
+
+.listening .voice-wave .wave:nth-child(3) {
+    animation: wave 2s infinite 0.6s;
+}
+
+@keyframes wave {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Voice search results styling */
+.voice-search-results {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-style: italic;
+    color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .voice-search-button {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .voice-recognition-status {
+        font-size: 12px;
+        padding: 8px 16px;
+        bottom: 10px;
+    }
+}

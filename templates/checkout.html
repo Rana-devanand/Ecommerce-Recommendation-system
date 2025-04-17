@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - Ecommerce Recommendation System{% endblock %}
+
+{% block additional_styles %}
+.checkout-step {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.step-number {
+    width: 30px;
+    height: 30px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+.step-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.cart-summary {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    position: sticky;
+    top: 20px;
+}
+.payment-method-card {
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+}
+.payment-method-card.selected {
+    border-color: #007bff;
+    background-color: #f0f7ff;
+}
+.payment-method-card img {
+    height: 30px;
+    margin-right: 10px;
+}
+.card-element {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+    margin-bottom: 20px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Checkout</h1>
+            {% if message %}
+                <div class="alert alert-{{ message_type }}">{{ message }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <form id="checkoutForm" action="{{ url_for('place_order') }}" method="post">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Shipping Address -->
+                <div class="checkout-step">
+                    <div class="step-title">
+                        <div class="step-number">1</div>
+                        <h3>Shipping Address</h3>
+                    </div>
+                    
+                    {% if saved_addresses %}
+                        <div class="form-group">
+                            <select class="form-control" id="savedAddresses" name="address_id">
+                                <option value="">--- Select a saved address ---</option>
+                                {% for address in saved_addresses %}
+                                    <option value="{{ address.id }}" {% if address.is_default %}selected{% endif %}>
+                                        {{ address.full_name }}, {{ address.street_address }}, {{ address.city }}, {{ address.state }} {{ address.postal_code }}
+                                    </option>
+                                {% endfor %}
+                                <option value="new">+ Add a new address</option>
+                            </select>
+                        </div>
+                    {% endif %}
+                    
+                    <div id="newAddressForm" {% if saved_addresses %}style="display: none;"{% endif %}>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" name="full_name" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="streetAddress">Street Address</label>
+                                <input type="text" class="form-control" id="streetAddress" name="street_address" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="city">City</label>
+                                <input type="text" class="form-control" id="city" name="city" required>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="state">State</label>
+                                <input type="text" class="form-control" id="state" name="state" required>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="postalCode">Postal Code</label>
+                                <input type="text" class="form-control" id="postalCode" name="postal_code" required>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="country">Country</label>
+                                <select class="form-control" id="country" name="country" required>
+                                    <option value="United States">United States</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="India">India</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="saveAddress" name="save_address" value="1">
+                                <label class="form-check-label" for="saveAddress">
+                                    Save this address for future orders
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shipping Method -->
+                <div class="checkout-step">
+                    <div class="step-title">
+                        <div class="step-number">2</div>
+                        <h3>Shipping Method</h3>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="shipping_method" id="standardShipping" value="standard" checked>
+                        <label class="form-check-label" for="standardShipping">
+                            <strong>Standard Shipping</strong> (3-5 business days) - {% if subtotal >= 50 %}Free{% else %}$5.99{% endif %}
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="shipping_method" id="expressShipping" value="express">
+                        <label class="form-check-label" for="expressShipping">
+                            <strong>Express Shipping</strong> (2-3 business days) - $9.99
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="shipping_method" id="overnightShipping" value="overnight">
+                        <label class="form-check-label" for="overnightShipping">
+                            <strong>Overnight Shipping</strong> (1 business day) - $19.99
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Payment Information -->
+                <div class="checkout-step">
+                    <div class="step-title">
+                        <div class="step-number">3</div>
+                        <h3>Payment Information</h3>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="payment-method-card selected" data-payment-method="credit_card">
+                            <div class="d-flex align-items-center">
+                                <input type="radio" name="payment_method" value="credit_card" checked style="display: none;">
+                                <img src="{{ url_for('static', filename='img/credit-card.png') }}" alt="Credit Card">
+                                <span><strong>Credit Card</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-method-card" data-payment-method="paypal">
+                            <div class="d-flex align-items-center">
+                                <input type="radio" name="payment_method" value="paypal" style="display: none;">
+                                <img src="{{ url_for('static', filename='img/paypal.png') }}" alt="PayPal">
+                                <span><strong>PayPal</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="credit_card_form">
+                        <div class="form-row">
+                            <div class="form-group col-12">
+                                <label for="cardNumber">Card Number</label>
+                                <input type="text" class="form-control" id="cardNumber" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                <small class="text-muted">For demonstration, use any 16-digit number</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="cardExpiry">Expiration Date (MM/YY)</label>
+                                <input type="text" class="form-control" id="cardExpiry" name="card_expiry" placeholder="MM/YY" maxlength="5" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="cardCvc">CVC</label>
+                                <input type="text" class="form-control" id="cardCvc" name="card_cvc" placeholder="123" maxlength="3" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardName">Name on Card</label>
+                            <input type="text" class="form-control" id="cardName" name="card_name" required>
+                        </div>
+                    </div>
+                    
+                    <div id="paypal_form" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fab fa-paypal mr-2"></i> You'll be redirected to PayPal to complete your payment securely.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card cart-summary">
+                    <div class="card-body">
+                        <h5 class="card-title">Order Summary</h5>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal ({{ total_items }} items)</span>
+                            <span>${{ "%.2f"|format(subtotal) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping</span>
+                            <span class="shipping-cost">{% if shipping_cost > 0 %}${{ "%.2f"|format(shipping_cost) }}{% else %}Free{% endif %}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax</span>
+                            <span>${{ "%.2f"|format(tax) }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Total</strong>
+                            <strong class="order-total">${{ "%.2f"|format(total) }}</strong>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-lock mr-2"></i>Place Order
+                        </button>
+                        
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt mr-1"></i> Your payment info is secure
+                            </small>
+                        </div>
+                        
+                        <hr>
+                        <h6>Order Items</h6>
+                        <ul class="list-unstyled">
+                            {% for item in cart_items %}
+                                <li class="d-flex justify-content-between mb-2">
+                                    <span>{{ item.quantity }}x {{ item.product_name|truncate(20) }}</span>
+                                    <span>${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle saved addresses dropdown
+        const savedAddressesSelect = document.getElementById('savedAddresses');
+        const newAddressForm = document.getElementById('newAddressForm');
+        
+        if (savedAddressesSelect) {
+            savedAddressesSelect.addEventListener('change', function() {
+                if (this.value === 'new') {
+                    newAddressForm.style.display = 'block';
+                } else {
+                    newAddressForm.style.display = 'none';
+                }
+            });
+        }
+        
+        // Handle payment method selection
+        const paymentMethodCards = document.querySelectorAll('.payment-method-card');
+        const creditCardForm = document.getElementById('credit_card_form');
+        const paypalForm = document.getElementById('paypal_form');
+        
+        paymentMethodCards.forEach(function(card) {
+            card.addEventListener('click', function() {
+                // Remove selected class from all cards
+                paymentMethodCards.forEach(function(c) {
+                    c.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked card
+                this.classList.add('selected');
+                
+                // Check the radio button
+                const radioInput = this.querySelector('input[type="radio"]');
+                radioInput.checked = true;
+                
+                // Show the appropriate form
+                const paymentMethod = this.getAttribute('data-payment-method');
+                if (paymentMethod === 'credit_card') {
+                    creditCardForm.style.display = 'block';
+                    paypalForm.style.display = 'none';
+                } else if (paymentMethod === 'paypal') {
+                    creditCardForm.style.display = 'none';
+                    paypalForm.style.display = 'block';
+                }
+            });
+        });
+        
+        // Format credit card number
+        const cardNumberInput = document.getElementById('cardNumber');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                let formattedValue = '';
+                
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+            });
+        }
+        
+        // Format card expiry
+        const cardExpiryInput = document.getElementById('cardExpiry');
+        if (cardExpiryInput) {
+            cardExpiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                // Auto insert slash after month
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2);
+                }
+                
+                e.target.value = value;
+            });
+        }
+        
+        // Update total when shipping method changes
+        const shippingMethods = document.querySelectorAll('input[name="shipping_method"]');
+        const shippingCostElement = document.querySelector('.shipping-cost');
+        const orderTotalElement = document.querySelector('.order-total');
+        const subtotalValue = {{ subtotal }};
+        const taxValue = {{ tax }};
+        
+        shippingMethods.forEach(function(method) {
+            method.addEventListener('change', function() {
+                let shippingCost = 0;
+                
+                if (this.value === 'standard') {
+                    // Use a regular JavaScript condition instead of Jinja2 ternary
+                    shippingCost = {% if subtotal >= 50 %}0{% else %}5.99{% endif %};
+                } else if (this.value === 'express') {
+                    shippingCost = 9.99;
+                } else if (this.value === 'overnight') {
+                    shippingCost = 19.99;
+                }
+                
+                // Update shipping cost display
+                shippingCostElement.textContent = shippingCost > 0 ? '$' + shippingCost.toFixed(2) : 'Free';
+                
+                // Update total
+                const total = subtotalValue + shippingCost + taxValue;
+                orderTotalElement.textContent = '$' + total.toFixed(2);
+            });
+        });
+        
+        // Form validation
+        const checkoutForm = document.getElementById('checkoutForm');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                // Basic form validation
+                const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                
+                if (paymentMethod === 'credit_card') {
+                    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                    const cardExpiry = document.getElementById('cardExpiry').value;
+                    const cardCvc = document.getElementById('cardCvc').value;
+                    
+                    if (cardNumber.length !== 16) {
+                        alert('Please enter a valid 16-digit card number');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+                        alert('Please enter a valid expiration date (MM/YY)');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    if (!/^\d{3}$/.test(cardCvc)) {
+                        alert('Please enter a valid 3-digit CVC');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+                
+                // If using saved addresses, ensure one is selected
+                const savedAddressesSelect = document.getElementById('savedAddresses');
+                if (savedAddressesSelect && savedAddressesSelect.value === '') {
+                    alert('Please select a shipping address or add a new one');
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

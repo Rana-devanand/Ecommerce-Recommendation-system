@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Adjust Recommendation Weights</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h4>Current Weights</h4>
+        </div>
+        <div class="card-body">
+            <p>These weights determine how much influence each recommendation model has in the final recommendations.</p>
+            
+            <form action="{{ url_for('adjust_weights') }}" method="post">
+                <div class="form-group">
+                    <label for="content_weight">Content-Based Weight</label>
+                    <input type="range" class="form-control-range" id="content_weight" name="content_weight" 
+                           min="0" max="1" step="0.05" value="{{ weights.content_based }}" 
+                           oninput="updateWeight('content_value', this.value)">
+                    <small id="content_value" class="form-text text-muted">
+                        Current value: {{ "%.2f"|format(weights.content_based * 100) }}%
+                    </small>
+                    <small class="form-text text-muted">
+                        This affects recommendations based on product features (name, brand, tags)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="collaborative_weight">Collaborative Weight</label>
+                    <input type="range" class="form-control-range" id="collaborative_weight" name="collaborative_weight" 
+                           min="0" max="1" step="0.05" value="{{ weights.collaborative }}" 
+                           oninput="updateWeight('collaborative_value', this.value)">
+                    <small id="collaborative_value" class="form-text text-muted">
+                        Current value: {{ "%.2f"|format(weights.collaborative * 100) }}%
+                    </small>
+                    <small class="form-text text-muted">
+                        This affects traditional collaborative filtering recommendations based on user interactions
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="neural_weight">Neural Network Weight</label>
+                    <input type="range" class="form-control-range" id="neural_weight" name="neural_weight" 
+                           min="0" max="1" step="0.05" value="{{ weights.neural }}" 
+                           oninput="updateWeight('neural_value', this.value)">
+                    <small id="neural_value" class="form-text text-muted">
+                        Current value: {{ "%.2f"|format(weights.neural * 100) }}%
+                    </small>
+                    <small class="form-text text-muted">
+                        This affects deep learning-based recommendations using neural collaborative filtering
+                    </small>
+                </div>
+                
+                <div class="alert alert-primary" role="alert">
+                    <strong>Note:</strong> The values will be normalized to sum to 100%. If you set all values to their maximum, they will be treated as equal weights.
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateWeight(elementId, value) {
+        document.getElementById(elementId).textContent = 'Current value: ' + (value * 100).toFixed(2) + '%';
+    }
+</script>
+{% endblock %}

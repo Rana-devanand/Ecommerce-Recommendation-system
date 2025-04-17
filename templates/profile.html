@@ -1,0 +1,118 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">User Profile</h3>
+          <p><strong>Username:</strong> {{ user.username }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Your Recent Activity</h4>
+        </div>
+        <div class="card-body">
+          {% if activities %}
+          <ul class="list-group">
+            {% for activity in activities %}
+            <li class="list-group-item">
+              <strong>{{ activity.activity_type|capitalize }}</strong>:
+              <a
+                href="{{ url_for('view_product', product_name=activity.product_name) }}"
+              >
+                {{ activity.product_name }}
+              </a>
+              <small class="text-muted float-right"
+                >{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</small
+              >
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-center">No activity yet. Start browsing products!</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- AI Assistant Feature Callout -->
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-12">
+            <div class="card bg-dark text-white">
+              <div class="card-body p-4">
+                <div class="row align-items-center">
+                  <div class="col-md-2 text-center mb-3 mb-md-0">
+                    <i class="fas fa-robot fa-5x text-primary"></i>
+                  </div>
+                  <div class="col-md-7 mb-3 mb-md-0">
+                    <h3 class="mb-2">NEW: AI Shopping Assistant</h3>
+                    <p class="lead mb-0">
+                      Get personalized recommendations and find exactly what you
+                      need through natural conversation with our advanced AI
+                      assistant.
+                    </p>
+                  </div>
+                  <div class="col-md-3 text-center">
+                    <a
+                      href="{{ url_for('ai_assistant_page') }}"
+                      class="btn btn-primary btn-lg"
+                    >
+                      <i class="fas fa-comments mr-2"></i> Chat Now
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h4>Recommended for You</h4>
+        </div>
+        <div class="card-body">
+          {% if not recommendations.empty %}
+          <div class="row">
+            {% for _, product in recommendations.iterrows() %}
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <img
+                  src="{{ product.ImageURL }}"
+                  class="card-img-top"
+                  alt="{{ product.Name }}"
+                  style="height: 150px; object-fit: cover"
+                />
+                <div class="card-body">
+                  <h6 class="card-title">{{ truncate(product.Name, 30) }}</h6>
+                  <p class="card-text">
+                    <small>Brand: {{ product.Brand }}</small><br />
+                    <small>Rating: {{ product.Rating }} ★</small>
+                  </p>
+                  <a
+                    href="{{ url_for('view_product', product_name=product.Name) }}"
+                    class="btn btn-sm btn-primary"
+                    >View</a
+                  >
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-center">
+            Browse more products to get personalized recommendations!
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

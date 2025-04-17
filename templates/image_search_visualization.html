@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">How Our Image Search Works</h1>
+
+    <!-- Technology Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-cogs"></i> Technology Behind Image Search</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Our image search leverages cutting-edge computer vision to match your uploaded images with visually similar products in our database.</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Text Search vs. Image Search</h4>
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Text Search</th>
+                                        <th>Image Search</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Requires exact keywords</td>
+                                        <td>Upload an image, no words needed</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Limited to descriptions</td>
+                                        <td>Matches based on visual features</td>
+                                    </tr>
+                                    <tr>
+                                        <td>"red lipstick"</td>
+                                        <td>Image of a red lipstick tube</td>
+                                    </tr>
+                                    <tr>
+                                        <td>May miss visual matches</td>
+                                        <td>Finds look-alikes directly</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Technology Stack</h4>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <i class="fas fa-brain text-primary mr-2"></i>
+                                    <strong>MobileNetV2:</strong> Efficient CNN for feature extraction
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-project-diagram text-success mr-2"></i>
+                                    <strong>Feature Vectors:</strong> 1,280-dimensional image representations
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-sitemap text-danger mr-2"></i>
+                                    <strong>Cosine Similarity:</strong> Measuring visual similarity
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-cubes text-warning mr-2"></i>
+                                    <strong>Transfer Learning:</strong> Pre-trained model optimization
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-chart-line text-info mr-2"></i>
+                                    <strong>Ranking:</strong> Top visual matches prioritized
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-magic"></i> How It Works</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-5">
+                        <h4>The Image Search Pipeline</h4>
+
+                        <div class="d-flex justify-content-center align-items-center flex-wrap my-4">
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-camera fa-2x text-primary"></i>
+                                    </div>
+                                    <h5 class="card-title">Image Upload</h5>
+                                    <p class="card-text small">You upload a product image</p>
+                                </div>
+                                <div class="card-footer bg-primary text-white text-center">
+                                    Step 1
+                                </div>
+                            </div>
+
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-crop fa-2x text-success"></i>
+                                    </div>
+                                    <h5 class="card-title">Preprocessing</h5>
+                                    <p class="card-text small">Resize & normalize image</p>
+                                </div>
+                                <div class="card-footer bg-success text-white text-center">
+                                    Step 2
+                                </div>
+                            </div>
+
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-microchip fa-2x text-danger"></i>
+                                    </div>
+                                    <h5 class="card-title">Feature Extraction</h5>
+                                    <p class="card-text small">Extract visual features</p>
+                                </div>
+                                <div class="card-footer bg-danger text-white text-center">
+                                    Step 3
+                                </div>
+                            </div>
+
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-search fa-2x text-warning"></i>
+                                    </div>
+                                    <h5 class="card-title">Similarity Search</h5>
+                                    <p class="card-text small">Match with database</p>
+                                </div>
+                                <div class="card-footer bg-warning text-white text-center">
+                                    Step 4
+                                </div>
+                            </div>
+
+                            <div class="d-none d-md-block">
+                                <i class="fas fa-arrow-right fa-2x text-muted mx-1"></i>
+                            </div>
+                            <div class="d-md-none text-center w-100 my-2">
+                                <i class="fas fa-arrow-down fa-2x text-muted"></i>
+                            </div>
+
+                            <div class="card bg-light mx-2 mb-3" style="width: 180px;">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-sort-amount-down fa-2x text-info"></i>
+                                    </div>
+                                    <h5 class="card-title">Result Ranking</h5>
+                                    <p class="card-text small">Rank by similarity</p>
+                                </div>
+                                <div class="card-footer bg-info text-white text-center">
+                                    Step 5
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5">
+                            <h4>Example: Finding Similar Nail Polish</h4>
+                            <div class="table-responsive mt-3">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Process Step</th>
+                                            <th>What Happens</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Image Upload</td>
+                                            <td>User uploads a photo of a glittery pink nail polish bottle</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Preprocessing</td>
+                                            <td>Image resized to 224×224 pixels and normalized for MobileNetV2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Feature Extraction</td>
+                                            <td>MobileNetV2 extracts a 1,280-dimensional feature vector capturing color and shape</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Similarity Search</td>
+                                            <td>Compares feature vector with pre-extracted features of all product images</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Result Ranking</td>
+                                            <td>Returns top 10 nail polishes ranked by visual similarity (e.g., similar pink shades)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MobileNetV2 Architecture Visualization -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-network-wired"></i> MobileNetV2 Feature Extraction</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="text-center mb-3">MobileNetV2 Architecture</h4>
+                            <div class="bg-light p-3 rounded text-center">
+                                <img src="{{ url_for('static', filename='img/mobilenetv2_architecture.svg') }}"
+                                     class="img-fluid mb-2"
+                                     alt="MobileNetV2 Architecture"
+                                     style="max-height: 300px;">
+                                <p class="text-muted small">MobileNetV2 processes images through multiple convolutional layers to extract visual features.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Feature Detection Process</h4>
+                            <p>MobileNetV2 processes images through:</p>
+                            <ul>
+                                <li><strong>Early Layers:</strong> Detect edges and colors</li>
+                                <li><strong>Middle Layers:</strong> Identify textures and patterns</li>
+                                <li><strong>Deep Layers:</strong> Recognize shapes and objects</li>
+                                <li><strong>Final Output:</strong> Compact 1,280-dimensional feature vector</li>
+                            </ul>
+                            <p class="mt-3">Detected Visual Features:</p>
+                            <div class="d-flex flex-wrap justify-content-center">
+                                <span class="badge badge-pill badge-primary m-1">Colors</span>
+                                <span class="badge badge-pill badge-success m-1">Textures</span>
+                                <span class="badge badge-pill badge-danger m-1">Shapes</span>
+                                <span class="badge badge-pill badge-warning m-1">Patterns</span>
+                                <span class="badge badge-pill badge-info m-1">Objects</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mb-5">
+        <a href="{{ url_for('image_search') }}" class="btn btn-info btn-lg">
+            <i class="fas fa-camera"></i> Try Image Search Now
+        </a>
+    </div>
+</div>
+{% endblock %}

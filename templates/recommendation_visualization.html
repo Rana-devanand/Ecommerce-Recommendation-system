@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Recommendation System Visualization</h1>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>How Our Recommendation System Works</h4>
+                </div>
+                <div class="card-body">
+                    <p>Our enhanced recommendation system combines three powerful approaches to deliver the most personalized product suggestions:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Content-Based Filtering</h5>
+                                    <i class="fas fa-tag fa-3x mb-3 text-primary"></i>
+                                    <p class="card-text">Recommends products similar to ones you've liked based on product features like brand, tags, and descriptions.</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <span class="badge badge-info">TF-IDF Vectorization</span>
+                                    <span class="badge badge-info">SVD</span>
+                                    <span class="badge badge-info">Cosine Similarity</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Collaborative Filtering</h5>
+                                    <i class="fas fa-users fa-3x mb-3 text-success"></i>
+                                    <p class="card-text">Recommends products based on what similar users have liked, using patterns in user behavior.</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <span class="badge badge-success">User Similarity</span>
+                                    <span class="badge badge-success">Temporal Decay</span>
+                                    <span class="badge badge-success">Weighted Activity</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Neural Collaborative Filtering</h5>
+                                    <i class="fas fa-brain fa-3x mb-3 text-danger"></i>
+                                    <p class="card-text">Uses deep learning to model complex user-item interactions and discover non-linear patterns.</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <span class="badge badge-danger">Deep Neural Networks</span>
+                                    <span class="badge badge-danger">Embeddings</span>
+                                    <span class="badge badge-danger">Matrix Factorization</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Neural Collaborative Filtering Architecture</h4>
+                </div>
+                <div class="card-body text-center">
+                    <!-- SVG diagram of the NCF architecture -->
+                    <svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Input Layers -->
+                        <rect x="50" y="50" width="100" height="60" rx="10" fill="#FFCDD2" stroke="#B71C1C" stroke-width="2"/>
+                        <text x="100" y="85" text-anchor="middle" font-size="14" font-weight="bold">User Input</text>
+                        
+                        <rect x="50" y="200" width="100" height="60" rx="10" fill="#BBDEFB" stroke="#0D47A1" stroke-width="2"/>
+                        <text x="100" y="235" text-anchor="middle" font-size="14" font-weight="bold">Item Input</text>
+                        
+                        <!-- Embedding Layers -->
+                        <rect x="200" y="50" width="120" height="60" rx="10" fill="#FFCDD2" stroke="#B71C1C" stroke-width="2"/>
+                        <text x="260" y="85" text-anchor="middle" font-size="14" font-weight="bold">User Embedding</text>
+                        
+                        <rect x="200" y="200" width="120" height="60" rx="10" fill="#BBDEFB" stroke="#0D47A1" stroke-width="2"/>
+                        <text x="260" y="235" text-anchor="middle" font-size="14" font-weight="bold">Item Embedding</text>
+                        
+                        <line x1="150" y1="80" x2="200" y2="80" stroke="#B71C1C" stroke-width="2"/>
+                        <line x1="150" y1="230" x2="200" y2="230" stroke="#0D47A1" stroke-width="2"/>
+                        
+                        <!-- Flatten Layers -->
+                        <rect x="370" y="50" width="100" height="60" rx="10" fill="#FFCDD2" stroke="#B71C1C" stroke-width="2"/>
+                        <text x="420" y="85" text-anchor="middle" font-size="14" font-weight="bold">Flatten</text>
+                        
+                        <rect x="370" y="200" width="100" height="60" rx="10" fill="#BBDEFB" stroke="#0D47A1" stroke-width="2"/>
+                        <text x="420" y="235" text-anchor="middle" font-size="14" font-weight="bold">Flatten</text>
+                        
+                        <line x1="320" y1="80" x2="370" y2="80" stroke="#B71C1C" stroke-width="2"/>
+                        <line x1="320" y1="230" x2="370" y2="230" stroke="#0D47A1" stroke-width="2"/>
+                        
+                        <!-- Concatenate Layer -->
+                        <rect x="520" y="125" width="120" height="60" rx="10" fill="#E1BEE7" stroke="#4A148C" stroke-width="2"/>
+                        <text x="580" y="160" text-anchor="middle" font-size="14" font-weight="bold">Concatenate</text>
+                        
+                        <line x1="470" y1="80" x2="500" y2="140" stroke="#673AB7" stroke-width="2"/>
+                        <line x1="470" y1="230" x2="500" y2="170" stroke="#673AB7" stroke-width="2"/>
+                        <line x1="500" y1="140" x2="520" y2="155" stroke="#673AB7" stroke-width="2"/>
+                        <line x1="500" y1="170" x2="520" y2="155" stroke="#673AB7" stroke-width="2"/>
+                        
+                        <!-- Dense Layers -->
+                        <rect x="690" y="50" width="100" height="60" rx="10" fill="#C8E6C9" stroke="#1B5E20" stroke-width="2"/>
+                        <text x="740" y="75" text-anchor="middle" font-size="14" font-weight="bold">Dense (64)</text>
+                        <text x="740" y="95" text-anchor="middle" font-size="12">ReLU</text>
+                        
+                        <rect x="690" y="125" width="100" height="60" rx="10" fill="#C8E6C9" stroke="#1B5E20" stroke-width="2"/>
+                        <text x="740" y="150" text-anchor="middle" font-size="14" font-weight="bold">Dense (32)</text>
+                        <text x="740" y="170" text-anchor="middle" font-size="12">ReLU</text>
+                        
+                        <rect x="690" y="200" width="100" height="60" rx="10" fill="#C8E6C9" stroke="#1B5E20" stroke-width="2"/>
+                        <text x="740" y="225" text-anchor="middle" font-size="14" font-weight="bold">Dense (16)</text>
+                        <text x="740" y="245" text-anchor="middle" font-size="12">ReLU</text>
+                        
+                        <rect x="690" y="290" width="100" height="60" rx="10" fill="#FFF9C4" stroke="#F57F17" stroke-width="2"/>
+                        <text x="740" y="315" text-anchor="middle" font-size="14" font-weight="bold">Output (1)</text>
+                        <text x="740" y="335" text-anchor="middle" font-size="12">Sigmoid</text>
+                        
+                        <line x1="640" y1="155" x2="690" y2="80" stroke="#1B5E20" stroke-width="2"/>
+                        <line x1="640" y1="155" x2="690" y2="155" stroke="#1B5E20" stroke-width="2"/>
+                        <line x1="690" y1="80" x2="690" y2="155" stroke="#1B5E20" stroke-width="2" opacity="0.5" stroke-dasharray="5,5"/>
+                        <line x1="740" y1="110" x2="740" y2="125" stroke="#1B5E20" stroke-width="2"/>
+                        <line x1="740" y1="185" x2="740" y2="200" stroke="#1B5E20" stroke-width="2"/>
+                        <line x1="740" y1="260" x2="740" y2="290" stroke="#F57F17" stroke-width="2"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Ensemble Methodology</h4>
+                </div>
+                <div class="card-body">
+                    <p>Our system uses a weighted ensemble approach to combine recommendations from all three models:</p>
+                    
+                    <div class="text-center my-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-md-right">
+                                <h5>Content-Based Recommendations</h5>
+                                <div>Similarity Score</div>
+                            </div>
+                            <div class="col-md-1">
+                                <div style="font-size: 24px;">×</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    Weight {{ "%.0f"|format(weights.content_based * 100) }}%
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div style="font-size: 24px;">+</div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         style="width: {{ weights.content_based * 100 }}%">
+                                        {{ "%.0f"|format(weights.content_based * 100) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-md-right">
+                                <h5>Collaborative Recommendations</h5>
+                                <div>User Similarity Score</div>
+                            </div>
+                            <div class="col-md-1">
+                                <div style="font-size: 24px;">×</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    Weight {{ "%.0f"|format(weights.collaborative * 100) }}%
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div style="font-size: 24px;">+</div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ weights.collaborative * 100 }}%">
+                                        {{ "%.0f"|format(weights.collaborative * 100) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-md-right">
+                                <h5>Neural CF Recommendations</h5>
+                                <div>Neural Network Score</div>
+                            </div>
+                            <div class="col-md-1">
+                                <div style="font-size: 24px;">×</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    Weight {{ "%.0f"|format(weights.neural * 100) }}%
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div style="font-size: 24px;">=</div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" 
+                                         style="width: {{ weights.neural * 100 }}%">
+                                        {{ "%.0f"|format(weights.neural * 100) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row align-items-center mt-3">
+                            <div class="col-md-6 offset-md-1">
+                                <div class="alert alert-primary">
+                                    <strong>Final Weighted Score</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         style="width: {{ weights.content_based * 100 }}%">
+                                        CB
+                                    </div>
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ weights.collaborative * 100 }}%">
+                                        CF
+                                    </div>
+                                    <div class="progress-bar bg-danger" role="progressbar" 
+                                         style="width: {{ weights.neural * 100 }}%">
+                                        NCF
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="mt-4">The final recommendations are ranked by this combined score, giving you the most relevant products based on all three approaches.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
